@@ -1,5 +1,5 @@
 /*
- * Tests Binary Search Tree
+ * Calls various testing functions
  * @author Marques Reimann
  */
 
@@ -21,8 +21,9 @@ public class Main {
 		bst.insert(1);
 		bst.displayIn();
 		bst.displayPre();
-		System.out.println("The count is " + bst.countNodes() 
-							+ "\tThe number of levels is: " + bst.countLevels());
+		bst.displayPost();
+		System.out.println("The count is: " + bst.countNodes() 
+							+ "\t\tThe number of levels is: " + bst.countLevels());
 		bst.testNTR();
 		bst.testFN(2);
 	}

@@ -19,7 +19,7 @@ public class BinarySearchTree<T extends Comparable<? super T>> {
 		insert(root, item);
 	}
 
-	private void insert(BinaryNode<T> r, T item) { //Part of the above method
+	private void insert(BinaryNode<T> r, T item) { // Part of the above method
 		if (r == null) {
 			root = new BinaryNode(item);
 		} else {
@@ -38,25 +38,6 @@ public class BinarySearchTree<T extends Comparable<? super T>> {
 	}
 
 	/**
-	 * Displays inorder traversal of BST
-	 * 
-	 * @return void
-	 */
-	public void displayIn() {
-		System.out.println("Displaying in order traversal");
-		displayIn(root);
-		System.out.println();
-	}
-
-	private void displayIn(BinaryNode<T> r) { //Part of the above method
-		if (r != null) {
-			displayIn(r.leftChild);
-			System.out.print(r.data + "   ");
-			displayIn(r.rightChild);
-		}
-	}
-
-	/**
 	 * Recursively counts nodes in BST
 	 * 
 	 * @return int number of nodes
@@ -65,12 +46,12 @@ public class BinarySearchTree<T extends Comparable<? super T>> {
 		return countNodes(root);
 	}
 
-	private int countNodes(BinaryNode<T> r) { //part of the above method
+	private int countNodes(BinaryNode<T> r) { // part of the above method
 		if (r == null)
 			return 0;
 		return 1 + countNodes(r.rightChild) + countNodes(r.leftChild);
 	}
-	
+
 	/**
 	 * Recursively counts levels in BST
 	 * 
@@ -80,9 +61,9 @@ public class BinarySearchTree<T extends Comparable<? super T>> {
 		int count = 0;
 		return countLevels(root, count);
 	}
-	
-	private int countLevels(BinaryNode<T> r, int count) { //part of the above method
-		if(r==null)
+
+	private int countLevels(BinaryNode<T> r, int count) { // part of the above method
+		if (r == null)
 			return count;
 		count++;
 		int rightSide = countLevels(r.rightChild, count);
@@ -91,7 +72,26 @@ public class BinarySearchTree<T extends Comparable<? super T>> {
 	}
 
 	/**
-	 * Displays preorder traversal of BST
+	 * Displays inorder traversal of BST (Left, Root, Right)
+	 * 
+	 * @return void
+	 */
+	public void displayIn() {
+		System.out.println("Displaying in order traversal");
+		displayIn(root);
+		System.out.println();
+	}
+
+	public void displayIn(BinaryNode<T> r) { // Part of the above method
+		if (r != null) {
+			displayIn(r.leftChild);
+			System.out.print(r.data + "\t");
+			displayIn(r.rightChild);
+		}
+	}
+
+	/**
+	 * Displays preorder traversal of BST (root, left, right)
 	 * 
 	 * @return void
 	 */
@@ -101,38 +101,55 @@ public class BinarySearchTree<T extends Comparable<? super T>> {
 		System.out.println();
 	}
 
-	private void displayPre(BinaryNode<T> r) {
+	private void displayPre(BinaryNode<T> r) { // Part of the above method
 		if (r != null) {
-			System.out.print(r.data + "   ");
-			displayIn(r.leftChild);
-			displayIn(r.rightChild);
+			System.out.print(r.data + "\t");
+			displayPre(r.leftChild);
+			displayPre(r.rightChild);
 		}
 	}
 
 	/**
-	 * Removes a specific node
-	 *
+	 * Displays postorder traversal of BST (left, right, root)
+	 * 
+	 * @return void
+	 */
+	public void displayPost() {
+		System.out.println("Displaying Postorder Traversal");
+		displayPost(root);
+		System.out.println();
+	}
+
+	public void displayPost(BinaryNode<T> r) { // Part of the above method
+		if (r != null) {
+			displayPost(r.leftChild);
+			displayPost(r.rightChild);
+			System.out.print(r.data + "\t");
+		}
+	}
+
+	/**
+	 * Find node with largest entry in left subtree
+	 * by moving as far right in the subtree as possible
+	 * 
 	 * @return node to remove if node not found
 	 */
-	private BinaryNode<T> getNodeToRemove(BinaryNode<T> currentNode) { // Find node with largest entry in left subtree
-																		// by
-		// moving as far right in the subtree as possible
-		BinaryNode<T> leftSubtreeRoot = currentNode.getLeftChild();
+	private BinaryNode<T> getNodeToRemove(BinaryNode<T> r) { 
+		BinaryNode<T> leftSubtreeRoot = r.getLeftChild();
 		BinaryNode<T> rightChild = leftSubtreeRoot;
-		BinaryNode<T> priorNode = currentNode;
 		while (rightChild.hasRightChild()) {
-			priorNode = rightChild;
 			rightChild = rightChild.getRightChild();
 		} // end while
-			// rightChild contains the inorder predecessor and is the node to
-			// remove; priorNode is its parent
+			// Assertion: rightChild contains the inorder predecessor of r
 		return rightChild;
 	} // end getNodeToRemov
 
-	// testing above method
+	/**
+	 * Tests getNodeToRemove(root)
+	 */
 	public void testNTR() {
 		System.out.println("getNodeToRemove(root).getData(): " + getNodeToRemove(root).getData());
-	} // works as of 5/15
+	} // works as of 5/18
 
 	/**
 	 * Finding a node that matched a given value
