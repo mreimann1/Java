@@ -1,5 +1,5 @@
 /*
- * Calls various testing functions
+ * Tests Binary Search Tree
  * @author Marques Reimann
  */
 
