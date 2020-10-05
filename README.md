@@ -1,2 +1,2 @@
-# Java
-A repo for various Java projects.
+# java-cpp
+A repo for various Java and C++ projects that I built in school.
