@@ -20,7 +20,7 @@ using namespace std;
  *  and from https://stackoverflow.com/questions/347949/how-to-convert-a-stdstring-to-const-char-or-char
  */
 
-void num_words(string in_str, int* result, map<string,int>* words)
+void num_words(string in_str, map<string,int>& words)
 {
 
   char * str = new char[in_str.size() +1];
@@ -44,6 +44,7 @@ void num_words(string in_str, int* result, map<string,int>* words)
     {
       word = in_str.substr(start, end-start);
       cout << word << " found in text\n";
+      words[word]++;
       inSpaces = true;
       start = end+1;
     }
@@ -55,8 +56,6 @@ void num_words(string in_str, int* result, map<string,int>* words)
     ++str;
     ++end;
   }
-
-  *result = numWords;
   return;
 }
 
@@ -64,7 +63,7 @@ void num_words(string in_str, int* result, map<string,int>* words)
  * Functio to open a file, then call num_words to find the number of words in
  * that file.
  */
-void open_and_count(string arg, int* result, map<string, int>* words) {
+void open_and_count(string arg, map<string, int>& words) {
   cout << arg << " is being opened...\n";
   ifstream f_in;
   f_in.open(arg);
@@ -73,9 +72,7 @@ void open_and_count(string arg, int* result, map<string, int>* words) {
   if (f_in.is_open()) {
     while ( getline(f_in, line)) {
       cout << line << endl;
-      int line_count;
-      num_words(line, &line_count, words); // count each word and add to total
-      *result += line_count;
+      num_words(line, words); // count each word and add to total
     }
     f_in.close();
   } else {
@@ -91,17 +88,18 @@ int main(int args, char **argv)
     // Add a map which will be used by the whole program
     map<string, int> words;
 
-    //TODO: add code to iterate through list of arguments
-    for (int i = 0; i < args; i++)
-    { //loop through arguments
-        cout << argv[i] << " ";
+    // Iterate through arguments
+    for (int i = 1; i < args; i++) {
+      cout << argv[i] << " ";
+      string filename = argv[i];
+
+      cout << "filename: " << filename << endl;
+      open_and_count(filename, words);
     }
-    int result = 0;
-    //num_words("ab abc abcd", &result);
-    string filename = argv[1];
-    //strncpy(filename, argv[1]);
-    cout << "filename: " << filename << endl;
-    open_and_count(filename, &result, &words);
-    cout << "The count of words: " << result << endl;
+
+    // Print the wrods and their counts
+    for(auto elem : words) {
+      cout << elem.first << " " << elem.second << "\n";
+    }
     return 0;
 }
