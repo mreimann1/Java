@@ -20,7 +20,7 @@ using namespace std;
  *  and from https://stackoverflow.com/questions/347949/how-to-convert-a-stdstring-to-const-char-or-char
  */
 
-void num_words(string in_str, int* result)
+void num_words(string in_str, int* result, map<string,int>* words)
 {
 
   char * str = new char[in_str.size() +1];
@@ -33,11 +33,19 @@ void num_words(string in_str, int* result)
   bool inSpaces = true;
   int numWords = 0;
 
+  // Use int to keep track of start and end of string
+  int start = 0; // start at the beginning
+  int end = 0;
+  string word;
+
   while (*str != '\0')
   {
     if (std::isspace(*str))
     {
+      word = in_str.substr(start, end-start);
+      cout << word << " found in text\n";
       inSpaces = true;
+      start = end+1;
     }
     else if (inSpaces)
     {
@@ -45,6 +53,7 @@ void num_words(string in_str, int* result)
       inSpaces = false;
     }
     ++str;
+    ++end;
   }
 
   *result = numWords;
@@ -65,7 +74,7 @@ void open_and_count(string arg, int* result, map<string, int>* words) {
     while ( getline(f_in, line)) {
       cout << line << endl;
       int line_count;
-      num_words(line, &line_count); // count each word and add to total
+      num_words(line, &line_count, words); // count each word and add to total
       *result += line_count;
     }
     f_in.close();
