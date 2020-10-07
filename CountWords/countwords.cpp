@@ -55,6 +55,9 @@ void num_words(string in_str, map<string,int>& words) {
     ++str;
     ++end;
   }
+  word = in_str.substr(start, end-start);
+  words[word]++;
+
   return;
 }
 
