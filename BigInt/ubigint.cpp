@@ -267,12 +267,13 @@ bool ubigint::operator== (const ubigint& that) const {
 
    // compare the sizes
    long unsigned int length = ubigvalue.size();
-   if (length != that.ubigvalue.length()) {
+   if (length != that.ubigvalue.size()) {
       return false;
    }
+   string debug_statement = "";
    // search through vectors for any difference
-   for (length = length-1; length < 0 ; --length) {
-      if (ubigvalue[length] != that.ubigvalue[length]) {
+   for (int i = 0; i < int(length)-1; i++) {
+      if (ubigvalue[i] != that.ubigvalue[i]) {
          return false;
       }
    }
@@ -311,13 +312,13 @@ bool ubigint::operator< (const ubigint& that) const {
       return false;
    }
    // Loop through elements starting with highest order element
-   for(length=length-1; length>0; length--) {
-      if (ubigvalue[length] < that.ubigvalue[length]) {
+   for(int i =int(length)-1; i>0; i--) {
+      if (ubigvalue[i] < that.ubigvalue[i]) {
          DEBUGF('<', "this: " << *this << "that: " << "that: " <<  that << endl
-            << "length: " << length << "\"" << ubigvalue[length] << "\" < \"" << that.ubigvalue[length] << "\"");
+            << "i: " << i << "\"" << ubigvalue[i] << "\" < \"" << that.ubigvalue[i] << "\"");
          return true;
       }
-      if (ubigvalue[length] > that.ubigvalue[length]) {
+      if (ubigvalue[i] > that.ubigvalue[i]) {
          return false;
       }
    }
