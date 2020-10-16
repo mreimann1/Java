@@ -255,6 +255,29 @@ ubigint ubigint::operator% (const ubigint& that) const {
 }
 
 bool ubigint::operator== (const ubigint& that) const {
+   DEBUGF ('u', *this << "==" << that);
+
+   // if sizes are not the same;
+   //    return false
+   // for i=0 to length
+   //    if ubigvalue[i] != that.ubigvalue[i] :
+   //       return false
+   // return true
+
+
+   // compare the sizes
+   long unsigned int length = ubigvalue.size();
+   if (length != that.ubigvalue.length()) {
+      return false;
+   }
+   // search through vectors for any difference
+   for (length = length-1; length < 0 ; --length) {
+      if (ubigvalue[length] != that.ubigvalue[length]) {
+         return false;
+      }
+   }
+   // no differences have been found
+   return true;
    // return uvalue == that.uvalue;
 }
 
