@@ -142,26 +142,67 @@ ubigint ubigint::operator+ (const ubigint& that) const {
 }
 
 ubigint ubigint::operator- (const ubigint& that) const {
-   DEBUGF ('u', *this << "+" << that);
+   DEBUGF ('u', *this << "-" << that);
 
    // Error check: this.uvalue must be greater than that.uvalue
    // if (this<that) : throw error
-   // initialize empty bigint result
-   // initialize borrow zero
-   // for all elements in smaller vector:
+   // initialize empty ubigint result
+   // initialize udigit_t borrow to zero
+   // for all elements in that.ubigvalue:
    //    right_operand = that.ubigvalue[i] - borrow
    //    if ubigvalue[i] < right_operand :
    //       right_operand+=10
    //       borrow = 1
    //    digit = ubigvalue[i] - right_operand
    //    push digit to result
+   // for  all remaining elements in this.ubigvalue:
+   //    push element to result
+   //    only consideration is borrow
    // pop high-order zeros
    // return result
 
+   // Error check
+   //if (*this < that) throw domain_error ("ubigint::operator-(a<b)");
+   long unsigned int right_size = that.ubigvalue.size();
+   long unsigned int left_size = ubigvalue.size();
 
+   ubigint result;
+   udigit_t borrow = 0;
+   for(long unsigned int i=0; i<right_size; i++) {
+      udigit_t right_operand = that.ubigvalue[i] + borrow;
+      udigit_t left_operand = ubigvalue[i];
+      borrow = 0;
+      DEBUGF('u', "left_operand: " << left_operand << " right_operand: " << right_operand);
+      
+      if (left_operand < right_operand) { 
+         DEBUGF('u', "Performing borrow...");
+         // Perform borrow operation
+         left_operand += 10;
+         borrow = 1;
+      }
+      result.ubigvalue.push_back(left_operand - right_operand);
+   
+   }
 
-   if (*this < that) throw domain_error ("ubigint::operator-(a<b)");
-   // return ubigint (uvalue - that.uvalue); //commented out to get things to run
+   for(long unsigned int i=right_size; i<left_size; i++) {
+      udigit_t left_operand = ubigvalue[i];
+      if(left_operand) { // if you can borrow from this digit
+         left_operand -= borrow;
+         borrow=0;
+      }
+      else { // borrow from another digit
+         left_operand = 9;
+         borrow=1; //redundant
+      }
+      result.ubigvalue.push_back(left_operand);
+   }
+
+   // Pop high-order zeros
+   while (result.ubigvalue.back()==0) {
+      result.ubigvalue.pop_back();
+   }
+
+   return result;
 }
 
 ubigint ubigint::operator* (const ubigint& that) const {
