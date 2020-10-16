@@ -40,40 +40,126 @@ ubigint::ubigint (const string& that){//: uvalue(0) {
 }
 
 ubigint ubigint::operator+ (const ubigint& that) const {
-   //DEBUGF ('u', *this << "+" << that);
+   DEBUGF ('u', *this << "+" << that);
 
-   // Precondition: the ubigints are the same size.
-   //       if not, append zeros
-
+   // Find largest size and smallest size
    // initialize empty ubigint result
    // initialize remainder 0
-   // for all elements i in ubigvalue:
+   // for all elements i in smaller vector:
    //    digit = ubigvalue[i] + that.ubigvalue[i] + remainder
    //    if (digit > 9) :
    //       remainder = digit/10
    //       digit = digit%10
    //    push digit
+   // push the rest of the elements from bigger vector
+
+   // Determine larger and smaller vector
+   long unsigned int smaller_size, larger_size;
+   bool this_is_smaller_than_that = ubigvalue.size() < that.ubigvalue.size();
+   bool that_is_smaller_than_this = ubigvalue.size() > that.ubigvalue.size();
+   bool that_and_this_same_size  = ubigvalue.size() == that.ubigvalue.size();
+
+   DEBUGF('u', "this_is_smaller_than_that: " << this_is_smaller_than_that << " that_is_smaller_than_this: " << that_is_smaller_than_this << " that_and_this_same_size: " << that_and_this_same_size);
 
    ubigint result; // initialize empty result
    udigit_t remainder = 0; // initialize empty remainder
-   for (long unsigned int i=0; i<ubigvalue.size(); i++) {
-      udigit_t digit = ubigvalue[i] + that.ubigvalue[i] + remainder;
-      if(digit >9) {
+   if(this_is_smaller_than_that) {
+      DEBUGF('u', "second element from top \"" << *this << "\" is smaller than top element \"" << that << "\"");
+      smaller_size =  ubigvalue.size();
+      larger_size = that.ubigvalue.size();
+      
+      for (long unsigned int i=0; i<smaller_size; i++) {
+         // add up the elements of the two vectors
+         udigit_t digit = ubigvalue[i] + that.ubigvalue[i] + remainder;
+         // carry the remainder
          remainder   = digit/10;
          digit       = digit%10;
+         result.ubigvalue.push_back(digit);
       }
-      result.ubigvalue.push_back(digit);
+      // push the rest of the elements from that.ubigvalue
+      for(long unsigned int i=smaller_size; i<larger_size; i++) {
+         udigit_t digit = that.ubigvalue[i] + remainder;
+         // carry the remainder
+         remainder   = digit/10;
+         digit       = digit%10;
+         result.ubigvalue.push_back(digit);
+      }
+      // check for remainder
+      if (remainder) {
+         DEBUGF ('u', "remainder: \"" << remainder << "\"");      
+         result.ubigvalue.push_back(remainder);
+      }
    }
-   // if there is a remainder, append it
-   if(remainder) {
-      DEBUGF ('u', "remainder: \"" << remainder << "\"");
-      result.ubigvalue.push_back(remainder);
+   else if (that_is_smaller_than_this) {
+      DEBUGF('u', "second element from top \"" << *this << "\" is larger than top element \"" << that << "\"");
+      smaller_size = that.ubigvalue.size();
+      larger_size = ubigvalue.size();
+
+      for (long unsigned int i=0; i<smaller_size; i++) {
+         // add up the elements of the two vectors
+         udigit_t digit = ubigvalue[i] + that.ubigvalue[i] + remainder;
+         // carry the remainder
+         remainder   = digit/10;
+         digit       = digit%10;
+         result.ubigvalue.push_back(digit);
+      }
+      // push the rest of the elements from this.ubigvalue
+      for(long unsigned int i=smaller_size; i<larger_size; i++) {
+         udigit_t digit = ubigvalue[i] + remainder;
+         // carry the remainder
+         remainder   = digit/10;
+         digit       = digit%10;
+         result.ubigvalue.push_back(digit);
+      }
+      // check for remainder
+      if (remainder) {
+         DEBUGF ('u', "remainder: \"" << remainder << "\"");      
+         result.ubigvalue.push_back(remainder);
+      }
    }
+   else { // they are same size
+      DEBUGF('u', "second element from top \"" << *this << "\" is same size as top element \"" << that << "\"");
+      smaller_size = ubigvalue.size();
+      larger_size = smaller_size;
+
+      for (long unsigned int i=0; i<smaller_size; i++) {
+         // add up the elements of the two vectors
+         udigit_t digit = ubigvalue[i] + that.ubigvalue[i] + remainder;
+         // carry the remainder
+         remainder   = digit/10;
+         digit       = digit%10;
+         result.ubigvalue.push_back(digit);
+      }
+      // check for remainder
+      if (remainder) {
+         DEBUGF ('u', "remainder: \"" << remainder << "\"");      
+         result.ubigvalue.push_back(remainder);
+      }
+   }
+
    DEBUGF ('u', "result.ubigvalue: \"" << result << "\"");
    return result;
 }
 
 ubigint ubigint::operator- (const ubigint& that) const {
+   DEBUGF ('u', *this << "+" << that);
+
+   // Error check: this.uvalue must be greater than that.uvalue
+   // if (this<that) : throw error
+   // initialize empty bigint result
+   // initialize borrow zero
+   // for all elements in smaller vector:
+   //    right_operand = that.ubigvalue[i] - borrow
+   //    if ubigvalue[i] < right_operand :
+   //       right_operand+=10
+   //       borrow = 1
+   //    digit = ubigvalue[i] - right_operand
+   //    push digit to result
+   // pop high-order zeros
+   // return result
+
+
+
    if (*this < that) throw domain_error ("ubigint::operator-(a<b)");
    // return ubigint (uvalue - that.uvalue); //commented out to get things to run
 }
