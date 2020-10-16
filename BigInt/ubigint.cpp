@@ -133,9 +133,8 @@ bool ubigint::operator< (const ubigint& that) const {
 
 ostream& operator<< (ostream& out, const ubigint& that) { 
    //DEBUGF ('~', "that.ubigvalue.size(): " << that.ubigvalue.size() << ". ");
-   auto iter = that.ubigvalue.begin();
    string result = "";                       // NOTE: Possibly change to ostringstream
-   for (; iter!= that.ubigvalue.end(); ++iter) {
+   for (auto iter = that.ubigvalue.crbegin(); iter!= that.ubigvalue.crend(); ++iter) {
       result += to_string(*iter);
    }
    return out << "ubigint(" << result << ")";
