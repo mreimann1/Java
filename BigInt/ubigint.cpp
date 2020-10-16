@@ -162,7 +162,11 @@ ubigint ubigint::operator- (const ubigint& that) const {
    // return result
 
    // Error check
-   //if (*this < that) throw domain_error ("ubigint::operator-(a<b)");
+   // if (*this < that) throw domain_error ("ubigint::operator-(a<b)");
+   if ( *this < that ) {
+      throw domain_error("Subtraction of larger ubigint from smaller ubigint");
+   }
+
    long unsigned int right_size = that.ubigvalue.size();
    long unsigned int left_size = ubigvalue.size();
 
@@ -183,7 +187,7 @@ ubigint ubigint::operator- (const ubigint& that) const {
       result.ubigvalue.push_back(left_operand - right_operand);
    
    }
-
+   // Handle the rest of the digits
    for(long unsigned int i=right_size; i<left_size; i++) {
       udigit_t left_operand = ubigvalue[i];
       if(left_operand) { // if you can borrow from this digit
@@ -198,7 +202,7 @@ ubigint ubigint::operator- (const ubigint& that) const {
    }
 
    // Pop high-order zeros
-   while (result.ubigvalue.back()==0) {
+   while (result.ubigvalue.back()==0 && result.ubigvalue.size() > 1) {
       result.ubigvalue.pop_back();
    }
 
@@ -255,7 +259,48 @@ bool ubigint::operator== (const ubigint& that) const {
 }
 
 bool ubigint::operator< (const ubigint& that) const {
-   // return uvalue < that.uvalue;
+   DEBUGF ('u', *this << "<" << that);
+
+   // Check the sizes :
+   // BASE CASE: Both arrays have length zero
+   // if this.size < that.size: return true
+   // if this.size > that.size: return false
+   // else: length = size()
+   // for i=length-1 to 0 :
+   //    if this[i] < that[i] : return true
+   //    if this[i] > that[i] : return false
+   // return false
+
+   // Compare the sizes
+   long unsigned int length = ubigvalue.size();
+
+   // BASE CASE: Left array or both arrays have length 0;
+   if (length==0) {
+      DEBUGF('<', "Left hand array length: " << length);
+      return false;
+   }
+   if (length < that.ubigvalue.size()) {
+      DEBUGF('<', "Left operand is less than right operand");
+      return true;
+   }
+   if (length > that.ubigvalue.size()) {
+      DEBUGF('<', "Left operand is greater than right operand");
+      return false;
+   }
+   // Loop through elements starting with highest order element
+   for(length=length-1; length>0; length--) {
+      if (ubigvalue[length] < that.ubigvalue[length]) {
+         DEBUGF('<', "this: " << *this << "that: " << "that: " <<  that << endl
+            << "length: " << length << "\"" << ubigvalue[length] << "\" < \"" << that.ubigvalue[length] << "\"");
+         return true;
+      }
+      if (ubigvalue[length] > that.ubigvalue[length]) {
+         return false;
+      }
+   }
+   // No difference found
+   DEBUGF('<', "Left operand is less than right operand");  
+   return false;
 }
 
 ostream& operator<< (ostream& out, const ubigint& that) { 
