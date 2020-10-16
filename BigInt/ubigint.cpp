@@ -39,6 +39,11 @@ ubigint::ubigint (const string& that){//: uvalue(0) {
    }
 }
 
+// Constructor for initializeing a ubigint with a size and a repeated value
+ubigint::ubigint (unsigned int size, udigit_t val): ubigvalue(size, val) {
+   DEBUGF('~', "size = \"" << size << "\" val = \"" << val);
+}
+
 ubigint ubigint::operator+ (const ubigint& that) const {
    DEBUGF ('u', *this << "+" << that);
 
@@ -210,6 +215,35 @@ ubigint ubigint::operator- (const ubigint& that) const {
 }
 
 ubigint ubigint::operator* (const ubigint& that) const {
+   DEBUGF ('u', *this << "*" << that);
+
+   // initialize a new vector product of size (this.size + that.size)
+   // for i from 0 to this.size:
+   //    carry = 0
+   //    for j from 0 to that.size:
+   //       digit = this[i] * that[j] + product[i+j] + carry
+   //       product[i+j]  = digit % 10
+   //       carry = digit / 10
+   //    product[i+that.size] = carry
+   // trim leading zeroes
+   // return product
+
+   ubigint product (ubigvalue.size() + that.ubigvalue.size(), 0);
+   for (int i=0; i<ubigvalue.size(); i++) {
+      udigit_t carry = 0;
+      for (int j=0; j<that.ubigvalue.size(); j++) {
+         udigit_t digit = ubigvalue[i] * that.ubigvalue[j] + product.ubigvalue[i+j] + carry;
+         product.ubigvalue[i+j] = digit%10;
+         carry = digit/10;
+      }
+      product.ubigvalue[i+that.ubigvalue.size()] = carry;
+   }
+
+
+   // trim leading zeroes
+   while (product.ubigvalue.size() > 1 and product.ubigvalue.back() == 0) product.ubigvalue.pop_back();
+   return product;
+
    // return ubigint (uvalue * that.uvalue);
 }
 
