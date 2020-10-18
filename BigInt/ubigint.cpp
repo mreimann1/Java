@@ -229,9 +229,9 @@ ubigint ubigint::operator* (const ubigint& that) const {
    // return product
 
    ubigint product (ubigvalue.size() + that.ubigvalue.size(), 0);
-   for (int i=0; i<ubigvalue.size(); i++) {
+   for (int i=0; i<int(ubigvalue.size()); i++) {
       udigit_t carry = 0;
-      for (int j=0; j<that.ubigvalue.size(); j++) {
+      for (int j=0; j<int(that.ubigvalue.size()); j++) {
          udigit_t digit = ubigvalue[i] * that.ubigvalue[j] + product.ubigvalue[i+j] + carry;
          product.ubigvalue[i+j] = digit%10;
          carry = digit/10;
@@ -248,17 +248,54 @@ ubigint ubigint::operator* (const ubigint& that) const {
 }
 
 void ubigint::multiply_by_2() {
-   // uvalue *= 2;
+   DEBUGF('2', "multiply_by_2");
+   DEBUGF('2', " ubigvalue before: " << *this);
+   // initialize carry to zero
+   // for i from 0 to this.size:
+   //    digit = this[i]*2 + carry
+   //    carry = digit/10
+   //    digit = digit%10
+   //    this[i] = digit
+   // if (carry) : append carry
+   // trime leading zeroes
+   
+
+   udigit_t carry = 0;
+   for (int i=0; i<int(ubigvalue.size()); i++) {
+      udigit_t digit = ubigvalue[i]*2 + carry;
+      carry = digit/10;
+      digit = digit%10;
+      ubigvalue[i] = digit;
+   }
+
+   if(carry) ubigvalue.push_back(carry);
+
+   while (ubigvalue.size() > 1 and ubigvalue.back() == 0) ubigvalue.pop_back();
+
+   DEBUGF('2', " ubigvalue after: " << *this);
 }
 
 void ubigint::divide_by_2() {
-   // uvalue /= 2;
+   DEBUGF('2', "divide_by_2");
+
+   // for i from 0 to this.size-1:
+   //    this[i] = (this[i]/2) + (this[i+1]%2*5) 
+   // this[size-1] /= 2
+   // trim leading zeroes
+
+   for (int i=0; i<int(ubigvalue.size())-1; i++) {
+      ubigvalue[i] = ubigvalue[i]/2 + ubigvalue[i+1]%2*5;
+   }
+   ubigvalue[ubigvalue.size()-1] /= 2; 
+
+   while (ubigvalue.size() > 1 and ubigvalue.back() == 0) ubigvalue.pop_back();
 }
 
 
 struct quo_rem { ubigint quotient; ubigint remainder; };
 quo_rem udivide (const ubigint& dividend, const ubigint& divisor_) {
    // NOTE: udivide is a non-member function.
+   DEBUGF('!', "udivide(" << dividend << ", " << divisor_ << ")");
    ubigint divisor {divisor_};
    ubigint zero {0};
    if (divisor == zero) throw domain_error ("udivide by zero");
@@ -281,6 +318,7 @@ quo_rem udivide (const ubigint& dividend, const ubigint& divisor_) {
 }
 
 ubigint ubigint::operator/ (const ubigint& that) const {
+   DEBUGF ('/', *this << "/" << that);
    return udivide (*this, that).quotient;
 }
 
@@ -302,15 +340,19 @@ bool ubigint::operator== (const ubigint& that) const {
    // compare the sizes
    long unsigned int length = ubigvalue.size();
    if (length != that.ubigvalue.size()) {
+      //DEBUGF('!', "1");
       return false;
    }
    string debug_statement = "";
    // search through vectors for any difference
-   for (int i = 0; i < int(length)-1; i++) {
+   for (int i = 0; i < int(length); i++) {
       if (ubigvalue[i] != that.ubigvalue[i]) {
+         //DEBUGF('!', "2");
          return false;
       }
+      //DEBUGF('!', ubigvalue[i] << " compared to " << that.ubigvalue[i]);
    }
+   DEBUGF('!', "3 - ubigvalue.size(): " << ubigvalue.size() <<  " that.ubigvalue.size(): " << that.ubigvalue.size() );
    // no differences have been found
    return true;
    // return uvalue == that.uvalue;
@@ -346,7 +388,7 @@ bool ubigint::operator< (const ubigint& that) const {
       return false;
    }
    // Loop through elements starting with highest order element
-   for(int i =int(length)-1; i>0; i--) {
+   for(int i =int(length)-1; i>=0; i--) {
       if (ubigvalue[i] < that.ubigvalue[i]) {
          DEBUGF('<', "this: " << *this << "that: " << "that: " <<  that << endl
             << "i: " << i << "\"" << ubigvalue[i] << "\" < \"" << that.ubigvalue[i] << "\"");

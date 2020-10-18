@@ -17,8 +17,6 @@ bigint::bigint (const ubigint& uvalue_, bool is_negative_):
 }
 
 bigint::bigint (const string& that) {
-   DEBUGF('~', "Testing the dataflow of an integer: that: " << that <<". " )
-
    is_negative = that.size() > 0 and that[0] == '_';
    uvalue = ubigint (that.substr (is_negative ? 1 : 0));
 }
