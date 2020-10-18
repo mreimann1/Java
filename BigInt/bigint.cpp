@@ -34,7 +34,7 @@ bigint bigint::operator+ (const bigint& that) const {
   // if their signs match :
   //  add their uvalues
   //  copy the sign
-  // else (their signs are different):
+  // else (their signs are different) :
   //  subtract the smaller from the larger
   //  set the result sign to the sign of the bigger
   // make sure zeros sign is positive
@@ -76,18 +76,58 @@ bigint bigint::operator+ (const bigint& that) const {
 }
 
 bigint bigint::operator- (const bigint& that) const {
-  ubigint result = uvalue - that.uvalue;
+
+  // if their signs match:
+  //  subtract their values
+  //  copy this sign
+  // else (their signs are different) :
+  //  add their uvalues
+  //  copy this sign
+  
+  bigint result;
+
+  if (is_negative == that.is_negative) {
+    result.uvalue = uvalue - that.uvalue;
+    result.is_negative = is_negative;
+    return result;
+  }
+
+  // else
+
+  result.uvalue = uvalue + that.uvalue;
+  result.is_negative = is_negative;
+
   return result;
 }
 
 
 bigint bigint::operator* (const bigint& that) const {
-  bigint result = uvalue * that.uvalue;
+
+  // if the signs are different :
+  //  result sign is negative
+  // if the signs are the same :
+  //  result sign is positive
+
+  bigint result;
+
+  result.uvalue = uvalue * that.uvalue;
+  result.is_negative = (is_negative != that.is_negative);
+
   return result;
 }
 
 bigint bigint::operator/ (const bigint& that) const {
-  bigint result = uvalue / that.uvalue;
+
+  // if the signs are different :
+  //  result sign is negative
+  // if the signs are the same :
+  //  result sign is positive
+
+  bigint result;
+  
+  result.uvalue = uvalue / that.uvalue;
+  result.is_negative = (is_negative != that.is_negative);
+
   return result;
 }
 

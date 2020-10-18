@@ -323,6 +323,9 @@ ubigint ubigint::operator/ (const ubigint& that) const {
 }
 
 ubigint ubigint::operator% (const ubigint& that) const {
+   // Handle error if denominator is 0
+   throw domain_error("remainder by zero");
+
    return udivide (*this, that).remainder;
 }
 
@@ -399,7 +402,7 @@ bool ubigint::operator< (const ubigint& that) const {
       }
    }
    // No difference found
-   DEBUGF('<', "Left operand is less than right operand");  
+   DEBUGF('<', "Left operand is equal to right operand");  
    return false;
 }
 
