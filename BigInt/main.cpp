@@ -130,45 +130,6 @@ void scan_options (int argc, char** argv) {
 //
 int main (int argc, char** argv) {
 
-   // TEST CODE DELETE LATER
-   bigint a ("100");
-   bigint b ("1000");
-   bigint c ("11");
-   bigint d ("12");
-
-   cout << "TEST CODE DELETE LATER : " << endl
-        << a << "<" << b << ": " << (a < b) << endl
-        << b << "<" << c << ": " << (b < c) << endl
-        << c << "<" << d << ": " << (c < d) << endl;
-
-   // TODO: TEST divide_by_2 and multiply_by_2
-        // << operator should reveal bigint.uvalue because it is a friend
-
-   ubigint e(12);
-   ubigint f(2);
-   ubigint g(3);
-
-   cout << "TESTING THE MEMBER UBIGINT : " << endl
-     << "e" << e << endl
-     << "f" << f << endl
-     << "g" << g << endl;
-
-   // e.divide_by_2();
-   // f.divide_by_2();
-   // g.divide_by_2();
-
-   // cout << "e.divide_by_2()" << e << endl 
-   //   << "e.divide_by_2()" << f << endl
-   //   << "g.divide_by_2()" << g << endl;
-
-   e.multiply_by_2();
-   f.multiply_by_2();
-   g.multiply_by_2();
-
-   cout << "e.multiply_by_2()" << e << endl 
-     << "e.multiply_by_2()" << f << endl
-     << "g.multiply_by_2()" << g << endl;
-
    exec::execname (argv[0]);
    scan_options (argc, argv);
    bigint_stack operand_stack;

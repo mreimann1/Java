@@ -412,7 +412,7 @@ ostream& operator<< (ostream& out, const ubigint& that) {
    for (auto iter = that.ubigvalue.crbegin(); iter!= that.ubigvalue.crend(); ++iter) {
       result += to_string(*iter);
    }
-   return out << "ubigint(" << result << ")";
+   return out << result;
    // return out << "ubigint(" << that.uvalue << ")";
 }
 
