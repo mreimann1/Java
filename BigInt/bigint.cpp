@@ -80,8 +80,8 @@ bigint bigint::operator+ (const bigint& that) const {
 bigint bigint::operator- (const bigint& that) const {
 
   // if their signs match:
-  //  subtract their values
-  //  copy this sign
+  //  subtract the smaller from larger
+  //  give it the opposite sign
   // else (their signs are different) :
   //  add their uvalues
   //  copy this sign
@@ -89,13 +89,27 @@ bigint bigint::operator- (const bigint& that) const {
   bigint result;
 
   if (is_negative == that.is_negative) {
-    result.uvalue = uvalue - that.uvalue;
-    result.is_negative = is_negative;
+    bool this_less_than_that = uvalue < that.uvalue;
+    bool that_less_than_this = that.uvalue < uvalue;
+
+    if(this_less_than_that) {
+      result.uvalue = that.uvalue - uvalue;
+      result.is_negative = !that.is_negative;
+    }
+    else if (that_less_than_this) {
+      result.uvalue = uvalue - that.uvalue;
+      result.is_negative = is_negative;      
+    }
+    else { // they are the same
+      ubigint zero {0};
+      result.uvalue = zero;
+    }
+
     result.assert_positive_zero();
     return result;
   }
 
-  // else
+  // else they have different signs
 
   result.uvalue = uvalue + that.uvalue;
   result.is_negative = is_negative;

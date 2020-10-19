@@ -323,9 +323,6 @@ ubigint ubigint::operator/ (const ubigint& that) const {
 }
 
 ubigint ubigint::operator% (const ubigint& that) const {
-   // Handle error if denominator is 0
-   throw domain_error("remainder by zero");
-
    return udivide (*this, that).remainder;
 }
 
@@ -339,26 +336,21 @@ bool ubigint::operator== (const ubigint& that) const {
    //       return false
    // return true
 
-
    // compare the sizes
    long unsigned int length = ubigvalue.size();
    if (length != that.ubigvalue.size()) {
-      //DEBUGF('!', "1");
       return false;
    }
    string debug_statement = "";
    // search through vectors for any difference
    for (int i = 0; i < int(length); i++) {
       if (ubigvalue[i] != that.ubigvalue[i]) {
-         //DEBUGF('!', "2");
          return false;
       }
-      //DEBUGF('!', ubigvalue[i] << " compared to " << that.ubigvalue[i]);
    }
    DEBUGF('!', "3 - ubigvalue.size(): " << ubigvalue.size() <<  " that.ubigvalue.size(): " << that.ubigvalue.size() );
    // no differences have been found
    return true;
-   // return uvalue == that.uvalue;
 }
 
 bool ubigint::operator< (const ubigint& that) const {
@@ -407,12 +399,16 @@ bool ubigint::operator< (const ubigint& that) const {
 }
 
 ostream& operator<< (ostream& out, const ubigint& that) { 
-   //DEBUGF ('~', "that.ubigvalue.size(): " << that.ubigvalue.size() << ". ");
    string result = "";                       // NOTE: Possibly change to ostringstream
-   for (auto iter = that.ubigvalue.crbegin(); iter!= that.ubigvalue.crend(); ++iter) {
-      result += to_string(*iter);
+
+   int counter = 0;
+   for (int i=int(that.ubigvalue.size()-1); i>=0; i--) {
+      result += to_string(that.ubigvalue[i]);
+      counter ++;
+      if (counter%69==0) {
+         result += "\\\n"; //wrap after 69 characters
+      }
    }
    return out << result;
-   // return out << "ubigint(" << that.uvalue << ")";
 }
 
