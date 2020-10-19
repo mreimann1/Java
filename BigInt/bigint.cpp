@@ -19,6 +19,7 @@ bigint::bigint (const ubigint& uvalue_, bool is_negative_):
 bigint::bigint (const string& that) {
   is_negative = that.size() > 0 and that[0] == '_';
   uvalue = ubigint (that.substr (is_negative ? 1 : 0));
+  assert_positive_zero();
 }
 
 bigint bigint::operator+ () const {
@@ -26,6 +27,8 @@ bigint bigint::operator+ () const {
 }
 
 bigint bigint::operator- () const {
+  ubigint zero{0};
+  if (uvalue==zero) return *this;
   return {uvalue, not is_negative};
 }
 
@@ -44,6 +47,7 @@ bigint bigint::operator+ (const bigint& that) const {
   if (is_negative == that.is_negative) {
     result.uvalue = uvalue + that.uvalue;
     result.is_negative = is_negative;
+    result.assert_positive_zero();
     return result;
   }
 
@@ -69,9 +73,7 @@ bigint bigint::operator+ (const bigint& that) const {
     result.uvalue = zero;
     result.is_negative = false;
   }
-  //TESTING THE RESULT OF PREVIOIUS LOGIC
-  cout << "TESTING 'operator+': result: " << result << endl;  
-
+  result.assert_positive_zero();
   return result;
 }
 
@@ -89,6 +91,7 @@ bigint bigint::operator- (const bigint& that) const {
   if (is_negative == that.is_negative) {
     result.uvalue = uvalue - that.uvalue;
     result.is_negative = is_negative;
+    result.assert_positive_zero();
     return result;
   }
 
@@ -96,7 +99,7 @@ bigint bigint::operator- (const bigint& that) const {
 
   result.uvalue = uvalue + that.uvalue;
   result.is_negative = is_negative;
-
+  result.assert_positive_zero();
   return result;
 }
 
@@ -109,10 +112,9 @@ bigint bigint::operator* (const bigint& that) const {
   //  result sign is positive
 
   bigint result;
-
   result.uvalue = uvalue * that.uvalue;
   result.is_negative = (is_negative != that.is_negative);
-
+  result.assert_positive_zero();
   return result;
 }
 
@@ -124,10 +126,9 @@ bigint bigint::operator/ (const bigint& that) const {
   //  result sign is positive
 
   bigint result;
-  
   result.uvalue = uvalue / that.uvalue;
   result.is_negative = (is_negative != that.is_negative);
-
+  result.assert_positive_zero();
   return result;
 }
 
@@ -151,3 +152,10 @@ ostream& operator<< (ostream& out, const bigint& that) {
               << "," << that.uvalue << ")";
 }
 
+/**
+ *  @brief: This function asserts that if thebigint is zero, that it's sign is positive.
+ **/
+void bigint::assert_positive_zero() {
+  ubigint zero{0};
+  if (uvalue == zero) is_negative = false; 
+}

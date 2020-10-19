@@ -38,6 +38,8 @@ public:
 
    bool operator==(const bigint &) const;
    bool operator<(const bigint &) const;
+
+   void assert_positive_zero();
 };
 
 #endif
