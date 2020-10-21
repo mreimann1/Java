@@ -168,9 +168,11 @@ ostream& operator<< (ostream& out, const bigint& that) {
 }
 
 /**
- *  @brief: This function asserts that if thebigint is zero, that it's sign is positive.
+ *  @brief: This function asserts that if thebigint is zero,
+ *  its sign is positive.
  **/
 void bigint::assert_positive_zero() {
   ubigint zero{0};
   if (uvalue == zero) is_negative = false; 
 }
+
