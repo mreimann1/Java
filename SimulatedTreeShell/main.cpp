@@ -47,7 +47,7 @@ int main (int argc, char** argv) {
    cout << argv[0] << " build " << __DATE__ << " " << __TIME__ << endl;
    scan_options (argc, argv);
    bool need_echo = want_echo();
-   inode_state state;
+   inode_state state; // Creates root node
    try {
       for (;;) {
          try {
