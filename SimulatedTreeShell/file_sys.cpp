@@ -31,6 +31,9 @@ inode_state::inode_state() {
           << ", prompt = \"" << prompt() << "\"");
    cout << "inode_state constructor:: root?\n";
    root = make_shared<inode> (file_type::DIRECTORY_TYPE);
+   cwd = root;
+   root->contents->get_dirents().insert(pair<string, inode_ptr>(".", root));
+   root->contents->get_dirents().insert(pair<string, inode_ptr>("..", root));
 }
 
 const string& inode_state::prompt() const { return prompt_; }
@@ -110,7 +113,14 @@ void directory::remove (const string& filename) {
 }
 
 inode_ptr directory::mkdir (const string& dirname) {
-   DEBUGF ('i', dirname);
+   DEBUGF ('i', dirname(pair<string, inode_ptr>(".", root)););
+
+   // create a inode pointer like in root
+   // get parent path (this->getpath)
+   // concatenate parentpath slash directory
+   // set it to the new inodes path
+   // insert to the new inode "." , itself
+   // insert to the new inode "..", this->getdirents.at("."))
    return nullptr;
 }
 

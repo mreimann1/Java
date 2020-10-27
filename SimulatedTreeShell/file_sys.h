@@ -93,6 +93,7 @@ class base_file {
       virtual void remove (const string& filename);
       virtual inode_ptr mkdir (const string& dirname);
       virtual inode_ptr mkfile (const string& filename);
+      virtual map<string, inode_ptr>& get_dirents() {throw file_error ("is a " + error_file_type());}
 };
 
 // class plain_file -
@@ -141,13 +142,14 @@ class directory: public base_file {
       map<string,inode_ptr> dirents;
       virtual const string& error_file_type() const override {
          static const string result = "directory";
-         return result;
+         return result;virtual map<string, inode_ptr>& get_dirents() override{return dirents}; // dirents getter
       }
    public:
       virtual size_t size() const override;
       virtual void remove (const string& filename) override;
       virtual inode_ptr mkdir (const string& dirname) override;
       virtual inode_ptr mkfile (const string& filename) override;
+      virtual map<string, inode_ptr>& get_dirents() override{return dirents}; // dirents getter
 };
 
 #endif
