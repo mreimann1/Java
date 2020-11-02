@@ -50,8 +50,8 @@ bool path_exists(inode_state& state, const wordvec& path) {
    // loop through all strings in path
    for (int i=0; i<int(path.size()); ++i) {
       inode_ptr next_node = NULL;
-      if( state.get_cwd()->get_contents()->get_dirents().find(path[i]) != state.get_cwd()->get_contents()->get_dirents().end() )
-         next_node = state.get_cwd()->get_contents()->get_dirents()[path[i]];
+      if( state.get_cwd()->get_contents()->get_dirents().find(path[i]+'/') != state.get_cwd()->get_contents()->get_dirents().end() )
+         next_node = state.get_cwd()->get_contents()->get_dirents()[path[i]+'/'];
       if(next_node!=NULL && next_node->get_contents()->is_directory()) // if the node exists and is a directory
          state.set_cwd(next_node);
       else {                                             // if the specified directory DNE
