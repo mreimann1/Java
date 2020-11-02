@@ -123,11 +123,15 @@ void fn_ls (inode_state& state, const wordvec& words){
    // Base Case: No pathname argument provided
    //    print the entries of cwd
    if (words.size() < 2) {
+      cout << state.get_cwd()->get_contents()->get_path() << "/:" << endl; // print the path header
       for (auto &entry : state.get_cwd()->get_contents()->get_dirents()) {
-         cout << setw(6) << setprecision(6) << left << entry.second->get_inode_nr() << "  "
-              << setw(6) << setprecision(6) << left << entry.second->get_contents()->size() << "  " << entry.first << endl;
+         cout << setw(6) << setprecision(6) << entry.second->get_inode_nr() << "  "
+              << setw(6) << setprecision(6) << entry.second->get_contents()->size() << "  " 
+              << entry.first << "/" << endl;
       }
    }
+
+   // TODO: implement pathname
 
 }
 
@@ -139,6 +143,31 @@ void fn_lsr (inode_state& state, const wordvec& words){
 void fn_make (inode_state& state, const wordvec& words){
    DEBUGF ('c', state);
    DEBUGF ('c', words);
+
+   // Precondition: words is at least size 2
+   if (words.size() < 2) {
+      cout << words[0] << ": missing operand\n";
+      return;
+   }
+   
+   // Create file in pathname words[1]
+   //    parse pathname
+   wordvec pathname = split(words[1], "/");
+   cout << "pathname: " << pathname << endl;
+   //    separate filename from pathname
+   string filename = pathname[pathname.size()-1];
+   cout << "filename: " << filename << endl;
+   pathname.pop_back(); 
+   cout << "pathname: " << pathname << endl;
+   //    assert pathname exists
+   bool path_good = path_exists(state, pathname);
+   cout << "path_good: " << path_good << endl;
+   if(path_good) {
+      //    mkfile with name filename in directory pathname
+      
+//      new_node = state.get_cwd()->get_contents()->mkdir(path[path.size()-1]); // this line makes a directory at the cwd
+   }
+   return;
 }
 
 void fn_mkdir (inode_state& state, const wordvec& words){
@@ -221,7 +250,7 @@ void fn_prompt (inode_state& state, const wordvec& words){
 void fn_pwd (inode_state& state, const wordvec& words){
    DEBUGF ('c', state);
    DEBUGF ('c', words);
-   cout << state.get_cwd()->get_contents()->get_path() <<endl;
+   cout << state.get_cwd()->get_contents()->get_path() << "/" << endl;
    return;
 }
 

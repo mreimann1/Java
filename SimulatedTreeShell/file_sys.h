@@ -73,6 +73,7 @@ class inode {
       inode (file_type);
       int get_inode_nr() const;
       base_file_ptr get_contents() {return contents;}
+      inode_ptr get_subdir_at(wordvec&);
 
 };
 

@@ -61,6 +61,37 @@ int inode::get_inode_nr() const {
    return inode_nr;
 }
 
+/** get_subdir_at
+ *  @brief: returns an inode_ptr to the subdirectory at a specified path
+ *  @param: wordvec& pathname - a vector of pathnames to traverse.
+ **/
+inode_ptr inode::get_subdir_at(wordvec& pathname) {
+  // Base case: pathname is empty. Return this
+  inode_ptr curr = make_shared<inode> (*this);
+
+  // Find the subdirectory that corresponds to element of pathname
+  for (int i=0; i<int(pathname.size()); ++i) {
+    // Assert that curr is a directory
+    if (!curr->get_contents()->is_directory()) {
+      cout << "Error in get_subdir_at: pathname["<< i << "]: " << pathname[i] << " DNE.\n";
+      return nullptr;
+    }
+
+    // Assert that the entry at the next directory exists
+    if (curr->get_contents()->get_dirents().find(pathname[i])==curr->get_contents()->get_dirents().end()) {
+      cout << "Error in get_subdir_at: pathname["<< i << "]: " << pathname[i] << " DNE.\n";
+      return curr;
+    }
+
+    // Move current node to the next directory entry
+    curr = curr->get_contents()->get_dirents().find(pathname[i])->second;
+
+    cout << "curr: " << curr << " typeid(curr): " << typeid(curr).name() << endl;
+
+  }
+  return curr;
+}
+
 
 file_error::file_error (const string& what):
             runtime_error (what) {
@@ -163,4 +194,3 @@ ostream& operator<< (ostream& out, const map<string,inode_ptr>& dirents) {
   out << endl;
   return out;
 }
-
