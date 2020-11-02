@@ -47,20 +47,19 @@ int exit_status_message() {
  **/
 bool path_exists(inode_state& state, const wordvec& path) {
    inode_ptr start = state.get_cwd();                    // save cwd so that it can be returned
-
    // loop through all strings in path
    for (int i=0; i<int(path.size()); ++i) {
-      //cout << "checking for subdirectory " << path[i] << "...\n";
-      inode_ptr next_node = state.get_cwd()->get_contents()->get_dirents()[path[i]];
-      //cout << "typeid(next_node->get_contents()->is_directory()): "  << (typeid(next_node->get_contents()->is_directory()).name()) << ", typeid(file_type::DIRECTORY_TYPE): " << (typeid(file_type::DIRECTORY_TYPE).name()) << endl;
+      inode_ptr next_node = NULL;
+      if( state.get_cwd()->get_contents()->get_dirents().find(path[i]) != state.get_cwd()->get_contents()->get_dirents().end() )
+         next_node = state.get_cwd()->get_contents()->get_dirents()[path[i]];
       if(next_node!=NULL && next_node->get_contents()->is_directory()) // if the node exists and is a directory
          state.set_cwd(next_node);
       else {                                             // if the specified directory DNE
-         //cout << path[i] << " DNE.\n";
          return false;
       }
    }
 
+   cout << "\n\n";
    state.set_cwd(start); // set the cwd back to beginning
    return true;
 }
@@ -108,6 +107,15 @@ void fn_ls (inode_state& state, const wordvec& words){
    DEBUGF ('c', words);
 
    cout << "state: " << state << endl;
+
+   // Base Case: No pathname argument provided
+   //    print the entries of cwd
+   if (words.size() < 2) {
+      for (auto &entry : state.get_cwd()->get_contents()->get_dirents()) {
+         cout << setw(6) << setprecision(6) << left << entry.second->get_inode_nr() << "  "
+              << setw(6) << setprecision(6) << left << entry.second->get_contents()->size() << "  " << entry.first << endl;
+      }
+   }
 
 }
 
@@ -161,17 +169,23 @@ void fn_mkdir (inode_state& state, const wordvec& words){
       // Check if parent path exists
       wordvec parent_path (path.begin(), path.end()-1);
       cout << "parent_path: " << parent_path << endl;
+
+      
       if (!path_exists(state, parent_path)) {
          cout << "mkdir: cannot create directory '" << words[i] << "': No such file or directory\n";
          continue;
       }
-
       // Make new directory in cwd
       inode_ptr new_node;
       inode_ptr start = state.get_cwd();                    // save cwd so that it can be returned
       // loop through all strings in path
       for (int j=0; j<int(path.size()); ++j) {
-         inode_ptr next_node = state.get_cwd()->get_contents()->get_dirents()[path[j]];
+         auto loc = state.get_cwd()->get_contents()->get_dirents().find(path[j]);
+         if (loc == state.get_cwd()->get_contents()->get_dirents().end()) {
+            cout << path[j] << " not found in dirents." << endl; // @DELETE
+            continue;
+         }
+         inode_ptr next_node = loc->second;
       }
       new_node = state.get_cwd()->get_contents()->mkdir(path[path.size()-1]); // create the new node
       state.set_cwd(start); // set the cwd back to beginning

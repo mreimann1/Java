@@ -11,6 +11,7 @@
 #include <stdexcept>
 #include <string>
 #include <vector>
+#include <iomanip>   // included by @Marques Reimann
 using namespace std;
 
 // Convenient type using to allow brevity of code elsewhere.

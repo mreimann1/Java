@@ -30,7 +30,7 @@ inode_state::inode_state() {
    DEBUGF ('i', "root = " << root << ", cwd = " << cwd
           << ", prompt = \"" << prompt() << "\"");
    root = make_shared<inode> (file_type::DIRECTORY_TYPE);
-   root->get_contents()->set_path("/");
+   //root->get_contents()->set_path("/");
    cwd = root;
    root->contents->get_dirents().insert(pair<string, inode_ptr>(".", root));
    root->contents->get_dirents().insert(pair<string, inode_ptr>("..", root));
@@ -115,6 +115,8 @@ void directory::remove (const string& filename) {
 inode_ptr directory::mkdir (const string& dirname) {
    DEBUGF ('i', dirname);
 
+   cout << "THIS FUNCTION IS BEING ENTERED..\n";
+
    // create a inode pointer like in root
    inode_ptr new_node = make_shared<inode> (file_type::DIRECTORY_TYPE);
    // get parent path (this->getpath)
@@ -128,6 +130,8 @@ inode_ptr directory::mkdir (const string& dirname) {
    new_node->contents->get_dirents().insert(direntry(".", new_node));
    // insert to the new inode "..", this->getdirents.at("."))
    new_node->contents->get_dirents().insert(direntry("..", this->get_dirents().at(".")));
+   // Insert to the root
+   get_dirents().insert(direntry(new_path, new_node));
 
    cout << "new_node: " << new_node << "\t&new_node: " << &new_node << "\tnew_node->contents: " << new_node->contents << endl
         << "new_node->contents->get_dirents(): " << new_node->contents->get_dirents() << endl;
@@ -154,7 +158,7 @@ ostream& operator<< (ostream& out, const map<string,inode_ptr>& dirents) {
   DEBUGF ('i', "<<dirents");
   for (auto it=dirents.begin(); it!=dirents.end(); it++) {
     out << "[" << it->first  << "]: ["
-        << it->second << "]\t"; 
+        << it->second << "] typeid(it->second): " << typeid(it->second).name() << " typeid(inode_ptr): " << typeid(inode_ptr).name() << "\t"; 
   }
   out << endl;
   return out;
