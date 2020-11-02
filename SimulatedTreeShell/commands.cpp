@@ -24,6 +24,11 @@ command_fn find_command_fn (const string& cmd) {
    // So: iterator->second is mapped_type (command_fn)
    DEBUGF ('c', "[" << cmd << "]");
    const auto result = cmd_hash.find (cmd);
+
+   // If first character is a hash '#' ignore this commmand
+   if (cmd[0] == '#') {
+      return fn_comment;
+   }
    if (result == cmd_hash.end()) {
       throw command_error (cmd + ": no such function");
    }
@@ -78,6 +83,13 @@ bool path_exists(inode_state& state, const wordvec& path) {
 //    }
 //    return true;
 // }
+
+void fn_comment (inode_state& state, const wordvec& words) {
+   // blank function
+   DEBUGF ('c', state);
+   DEBUGF ('c', words);
+   return;
+}
 
 void fn_cat (inode_state& state, const wordvec& words){
    DEBUGF ('c', state);
