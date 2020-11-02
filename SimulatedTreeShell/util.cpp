@@ -53,6 +53,25 @@ wordvec split (const string& line, const string& delimiters) {
    return words;
 }
 
+wordvec split_as_dir (const string& line, const string& delimiters) {
+   wordvec words;
+   size_t end = 0;
+
+   // Loop over the string, splitting out words, and for each word
+   // thus found, append it to the output wordvec.
+   for (;;) {
+      size_t start = line.find_first_not_of (delimiters, end);
+      if (start == string::npos) break;
+      end = line.find_first_of (delimiters, start);
+      string to_insert = line.substr (start, end - start) + '/';
+      words.push_back (to_insert);
+
+   }
+   DEBUGF ('u', words);
+   return words;
+}
+
+
 ostream& complain() {
    exec::status (EXIT_FAILURE);
    cerr << exec::execname() << ": ";

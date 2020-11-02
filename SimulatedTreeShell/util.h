@@ -56,6 +56,9 @@ class exec {
 
 wordvec split (const string& line, const string& delimiter);
 
+// does the same as split but inserts '/' at the end of each
+wordvec split_as_dir (const string& line, const string& delimiter);
+
 // complain -
 //    Used for starting error messages.  Sets the exit status to
 //    EXIT_FAILURE, writes the program name to cerr, and then

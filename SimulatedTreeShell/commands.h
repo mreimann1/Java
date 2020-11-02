@@ -23,6 +23,10 @@ class command_error: public runtime_error {
       explicit command_error (const string& what);
 };
 
+// helper functions	- 
+
+bool path_exist(inode_state& state, const wordvec& path);
+
 // execution functions -
 
 void fn_cat    (inode_state& state, const wordvec& words);

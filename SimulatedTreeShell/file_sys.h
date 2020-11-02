@@ -22,7 +22,9 @@ class plain_file;
 class directory;
 using inode_ptr = shared_ptr<inode>;
 using base_file_ptr = shared_ptr<base_file>;
+using direntry = pair<string,inode_ptr>;
 ostream& operator<< (ostream&, file_type);
+ostream& operator<< (ostream&, const map<string,inode_ptr>&);
 
 
 // inode_state -
@@ -42,6 +44,8 @@ class inode_state {
       inode_state& operator= (const inode_state&) = delete; // op=
       inode_state();
       const string& prompt() const;
+      inode_ptr get_cwd() {return cwd;}
+      void set_cwd(inode_ptr new_dir) {cwd = new_dir;}
 };
 
 // class inode -
@@ -59,6 +63,8 @@ class inode_state {
 
 class inode {
    friend class inode_state;
+   friend class base_file;
+   friend class directory;
    private:
       static size_t next_inode_nr;
       size_t inode_nr;
@@ -66,6 +72,8 @@ class inode {
    public:
       inode (file_type);
       int get_inode_nr() const;
+      base_file_ptr get_contents() {return contents;}
+
 };
 
 
@@ -94,6 +102,9 @@ class base_file {
       virtual inode_ptr mkdir (const string& dirname);
       virtual inode_ptr mkfile (const string& filename);
       virtual map<string, inode_ptr>& get_dirents() {throw file_error ("is a " + error_file_type());}
+      virtual string& get_path() {throw file_error ("is a " + error_file_type());}
+      virtual void set_path(const string&) {throw file_error ("is a " + error_file_type());}
+      virtual bool is_directory() {return false;}
 };
 
 // class plain_file -
@@ -138,18 +149,23 @@ class plain_file: public base_file {
 
 class directory: public base_file {
    private:
+      friend ostream& operator<< (ostream&, const directory&);
       // Must be a map, not unordered_map, so printing is lexicographic
       map<string,inode_ptr> dirents;
+      string path;
       virtual const string& error_file_type() const override {
          static const string result = "directory";
-         return result;virtual map<string, inode_ptr>& get_dirents() override{return dirents}; // dirents getter
+         return result;
       }
    public:
       virtual size_t size() const override;
       virtual void remove (const string& filename) override;
       virtual inode_ptr mkdir (const string& dirname) override;
       virtual inode_ptr mkfile (const string& filename) override;
-      virtual map<string, inode_ptr>& get_dirents() override{return dirents}; // dirents getter
+      virtual map<string, inode_ptr>& get_dirents() override{return dirents;} // dirents getter
+      virtual string& get_path() override{return path;}                       // path getter
+      virtual void set_path(const string& new_path) override{path = new_path;}// path setter
+      virtual bool is_directory() {return true;}
 };
 
 #endif

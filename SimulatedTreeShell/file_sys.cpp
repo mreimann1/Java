@@ -10,7 +10,7 @@ using namespace std;
 #include "file_sys.h"
 
 size_t inode::next_inode_nr {1};
-// NOTE: Redeclaration of a static member of the class
+// NOTE: Redeclaration of a static member if the class
 
 struct file_type_hash {
    size_t operator() (file_type type) const {
@@ -113,19 +113,50 @@ void directory::remove (const string& filename) {
 }
 
 inode_ptr directory::mkdir (const string& dirname) {
-   DEBUGF ('i', dirname(pair<string, inode_ptr>(".", root)););
+   DEBUGF ('i', dirname);
 
    // create a inode pointer like in root
+   inode_ptr new_node = make_shared<inode> (file_type::DIRECTORY_TYPE);
    // get parent path (this->getpath)
+   cout << "path: " << path << endl;
    // concatenate parentpath slash directory
+   string new_path = path + dirname + '/';
+   cout << "new_path: " << new_path << endl;
    // set it to the new inodes path
+   new_node->contents->set_path(new_path);
    // insert to the new inode "." , itself
+   new_node->contents->get_dirents().insert(direntry(".", new_node));
    // insert to the new inode "..", this->getdirents.at("."))
-   return nullptr;
+   new_node->contents->get_dirents().insert(direntry("..", this->get_dirents().at(".")));
+
+   cout << "new_node: " << new_node << "\tnew_node->contents: " << new_node->contents << endl
+        << "new_node->contents->get_dirents(): " << new_node->contents->get_dirents() << endl;
+   return new_node;
 }
 
 inode_ptr directory::mkfile (const string& filename) {
    DEBUGF ('i', filename);
    return nullptr;
+}
+
+/** operator<<
+ *  allows printing the contents of a directory to filestream
+ **/
+// ostream& operator<< (ostream& out, const directory& dir) { 
+//   DEBUGF ('i', "<<directory");
+//   return out << dir.get_dirents();
+// }
+
+/** operator<<
+ *  allows printing the contents of dirents to on ostream
+ **/
+ostream& operator<< (ostream& out, const map<string,inode_ptr>& dirents) { 
+  DEBUGF ('i', "<<dirents");
+  for (auto it=dirents.begin(); it!=dirents.end(); it++) {
+    out << "[" << it->first  << "]: ["
+        << it->second << "]\t"; 
+  }
+  out << endl;
+  return out;
 }
 
