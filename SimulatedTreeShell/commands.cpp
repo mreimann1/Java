@@ -167,25 +167,17 @@ void fn_mkdir (inode_state& state, const wordvec& words){
       }
 
       // Make new directory in cwd
-      inode_ptr new_node;  // = state.get_cwd()->get_contents()->mkdir(words[i]); 
+      inode_ptr new_node;
       inode_ptr start = state.get_cwd();                    // save cwd so that it can be returned
-
       // loop through all strings in path
-      for (int i=0; i<int(path.size()); ++i) {
-         //cout << "checking for subdirectory " << path[i] << "...\n";
-         inode_ptr next_node = state.get_cwd()->get_contents()->get_dirents()[path[i]];
-         //cout << "typeid(next_node->get_contents()->is_directory()): "  << (typeid(next_node->get_contents()->is_directory()).name()) << ", typeid(file_type::DIRECTORY_TYPE): " << (typeid(file_type::DIRECTORY_TYPE).name()) << endl;
-         if(next_node!=NULL && next_node->get_contents()->is_directory()) // if the node exists and is a directory
-            state.set_cwd(next_node);
-         else {                                             // if the specified directory DNE
-            //cout << path[i] << " DNE.\n";
-            return false;
-         }
+      for (int j=0; j<int(path.size()); ++j) {
+         inode_ptr next_node = state.get_cwd()->get_contents()->get_dirents()[path[j]];
       }
-
+      new_node = state.get_cwd()->get_contents()->mkdir(path[path.size()-1]); // create the new node
       state.set_cwd(start); // set the cwd back to beginning
-
       DEBUGF ('c', new_node);
+
+      cout << "state.get_cwd()->get_contents()->get_dirents(): " << state.get_cwd()->get_contents()->get_dirents() << endl;
    }
 
    //map<string,inode_ptr> temp_map = new_node->get_contents()->get_dirents();
@@ -203,6 +195,8 @@ void fn_prompt (inode_state& state, const wordvec& words){
 void fn_pwd (inode_state& state, const wordvec& words){
    DEBUGF ('c', state);
    DEBUGF ('c', words);
+   cout << state.get_cwd()->get_contents()->get_path() <<endl;
+   return;
 }
 
 void fn_rm (inode_state& state, const wordvec& words){

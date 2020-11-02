@@ -29,8 +29,8 @@ ostream& operator<< (ostream& out, file_type type) {
 inode_state::inode_state() {
    DEBUGF ('i', "root = " << root << ", cwd = " << cwd
           << ", prompt = \"" << prompt() << "\"");
-   cout << "inode_state constructor:: root?\n";
    root = make_shared<inode> (file_type::DIRECTORY_TYPE);
+   root->get_contents()->set_path("/");
    cwd = root;
    root->contents->get_dirents().insert(pair<string, inode_ptr>(".", root));
    root->contents->get_dirents().insert(pair<string, inode_ptr>("..", root));
@@ -129,7 +129,7 @@ inode_ptr directory::mkdir (const string& dirname) {
    // insert to the new inode "..", this->getdirents.at("."))
    new_node->contents->get_dirents().insert(direntry("..", this->get_dirents().at(".")));
 
-   cout << "new_node: " << new_node << "\tnew_node->contents: " << new_node->contents << endl
+   cout << "new_node: " << new_node << "\t&new_node: " << &new_node << "\tnew_node->contents: " << new_node->contents << endl
         << "new_node->contents->get_dirents(): " << new_node->contents->get_dirents() << endl;
    return new_node;
 }
