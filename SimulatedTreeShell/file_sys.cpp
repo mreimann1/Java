@@ -33,8 +33,8 @@ inode_state::inode_state() {
    root = make_shared<inode> (file_type::DIRECTORY_TYPE);
    //root->get_contents()->set_path("/");
    cwd = root;
-   root->contents->get_dirents().insert(pair<string, inode_ptr>("./", root));
-   root->contents->get_dirents().insert(pair<string, inode_ptr>("../", root));
+   root->contents->get_dirents().insert(pair<string, inode_ptr>(".", root));
+   root->contents->get_dirents().insert(pair<string, inode_ptr>("..", root));
 }
 
 const string& inode_state::prompt() const { return prompt_; }
@@ -146,26 +146,22 @@ void directory::remove (const string& filename) {
 }
 
 inode_ptr directory::mkdir (const string& dirname) {
-   DEBUGF ('i', dirname);
-   cout << "THIS FUNCTION IS BEING ENTERED..\n";
-   // create a inode pointer like in root
-   inode_ptr new_node = make_shared<inode> (file_type::DIRECTORY_TYPE);
-   // get parent path (this->getpath)
-   cout << "path: " << path << endl;
-   // concatenate parentpath slash directory
-   string new_path = path + dirname + '/';
-   cout << "new_path: " << new_path << endl;
-   // set it to the new inodes path
-   new_node->contents->set_path(new_path);
-   // insert to the new inode "." , itself
-   new_node->contents->get_dirents().insert(direntry("./", new_node));
-   // insert to the new inode "..", this->getdirents.at("."))
-   new_node->contents->get_dirents().insert(direntry("../", this->get_dirents().at(".")));
-   // Insert to the root
-   get_dirents().insert(direntry(new_path, new_node));
-   cout << "new_node: " << new_node << "\t&new_node: " << &new_node << "\tnew_node->contents: " << new_node->contents << endl
-        << "new_node->contents->get_dirents(): " << new_node->contents->get_dirents() << endl;
-   return new_node;
+  DEBUGF ('i', dirname);
+  // create a inode pointer like in root
+  inode_ptr new_node = make_shared<inode> (file_type::DIRECTORY_TYPE);
+  // concatenate parentpath slash directory
+  string new_path = path + dirname + '/';
+  // set it to the new inodes path
+  new_node->contents->set_path(new_path);
+  // insert to the new inode "." , itself
+  new_node->contents->get_dirents().insert(direntry(".", new_node));
+  // insert to the new inode "..", this->getdirents.at("."))
+  new_node->contents->get_dirents().insert(direntry("..", get_dirents().find(".")->second));
+  // Insert to the root
+  get_dirents().insert(direntry(new_path, new_node));
+  cout << "new_node: " << new_node << "\t&new_node: " << &new_node << "\tnew_node->contents: " << new_node->contents << endl
+      << "new_node->contents->get_dirents(): " << new_node->contents->get_dirents() << endl;
+  return new_node;
 }
 
 inode_ptr directory::mkfile (const string& filename) {

@@ -127,7 +127,7 @@ void fn_ls (inode_state& state, const wordvec& words){
       for (auto &entry : state.get_cwd()->get_contents()->get_dirents()) {
          cout << setw(6) << setprecision(6) << entry.second->get_inode_nr() << "  "
               << setw(6) << setprecision(6) << entry.second->get_contents()->size() << "  " 
-              << entry.first << endl;
+              << entry.first << ((entry.first=="." || entry.first=="..") ? ("/") : ("")) << endl;
       }
    }
 
