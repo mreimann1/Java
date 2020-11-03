@@ -149,23 +149,25 @@ void fn_make (inode_state& state, const wordvec& words){
       cout << words[0] << ": missing operand\n";
       return;
    }
-   
    // Create file in pathname words[1]
    //    parse pathname
    wordvec pathname = split(words[1], "/");
-   cout << "pathname: " << pathname << endl;
+   cout << "pathname: " << pathname << endl;//@DELETE
    //    separate filename from pathname
    string filename = pathname[pathname.size()-1];
-   cout << "filename: " << filename << endl;
+   cout << "filename: " << filename << endl;//@DELETE
    pathname.pop_back(); 
-   cout << "pathname: " << pathname << endl;
+   cout << "pathname: " << pathname << endl;//@DELETE
    //    assert pathname exists
    bool path_good = path_exists(state, pathname);
-   cout << "path_good: " << path_good << endl;
+   cout << "path_good: " << path_good << endl;//@DELETE
    if(path_good) {
       //    mkfile with name filename in directory pathname
-      
-//      new_node = state.get_cwd()->get_contents()->mkdir(path[path.size()-1]); // this line makes a directory at the cwd
+      inode_ptr dir = state.get_cwd()->get_subdir_at(pathname);   // get a pointer to the directory specified
+      cout << "dir: " << dir << endl; //@DELETE
+      inode_ptr new_node = dir->get_contents()->mkfile(filename);
+      new_node->get_contents()->writefile(wordvec(words.begin()+2, words.end()));
+      cout << "wordvec(words.begin()+2, words.end()): " << wordvec(words.begin()+2, words.end()) << endl;
    }
    return;
 }

@@ -68,7 +68,6 @@ int inode::get_inode_nr() const {
 inode_ptr inode::get_subdir_at(wordvec& pathname) {
   // Base case: pathname is empty. Return this
   inode_ptr curr = make_shared<inode> (*this);
-
   // Find the subdirectory that corresponds to element of pathname
   for (int i=0; i<int(pathname.size()); ++i) {
     // Assert that curr is a directory
@@ -76,16 +75,13 @@ inode_ptr inode::get_subdir_at(wordvec& pathname) {
       cout << "Error in get_subdir_at: pathname["<< i << "]: " << pathname[i] << " DNE.\n";
       return nullptr;
     }
-
     // Assert that the entry at the next directory exists
     if (curr->get_contents()->get_dirents().find(pathname[i])==curr->get_contents()->get_dirents().end()) {
       cout << "Error in get_subdir_at: pathname["<< i << "]: " << pathname[i] << " DNE.\n";
       return curr;
     }
-
     // Move current node to the next directory entry
     curr = curr->get_contents()->get_dirents().find(pathname[i])->second;
-
     cout << "curr: " << curr << " typeid(curr): " << typeid(curr).name() << endl;
 
   }
@@ -145,9 +141,7 @@ void directory::remove (const string& filename) {
 
 inode_ptr directory::mkdir (const string& dirname) {
    DEBUGF ('i', dirname);
-
    cout << "THIS FUNCTION IS BEING ENTERED..\n";
-
    // create a inode pointer like in root
    inode_ptr new_node = make_shared<inode> (file_type::DIRECTORY_TYPE);
    // get parent path (this->getpath)
@@ -163,7 +157,6 @@ inode_ptr directory::mkdir (const string& dirname) {
    new_node->contents->get_dirents().insert(direntry("..", this->get_dirents().at(".")));
    // Insert to the root
    get_dirents().insert(direntry(new_path, new_node));
-
    cout << "new_node: " << new_node << "\t&new_node: " << &new_node << "\tnew_node->contents: " << new_node->contents << endl
         << "new_node->contents->get_dirents(): " << new_node->contents->get_dirents() << endl;
    return new_node;
@@ -171,16 +164,13 @@ inode_ptr directory::mkdir (const string& dirname) {
 
 inode_ptr directory::mkfile (const string& filename) {
    DEBUGF ('i', filename);
-   return nullptr;
-}
+   // TODO: check if node at filename already exists
 
-/** operator<<
- *  allows printing the contents of a directory to filestream
- **/
-// ostream& operator<< (ostream& out, const directory& dir) { 
-//   DEBUGF ('i', "<<directory");
-//   return out << dir.get_dirents();
-// }
+   // create new node
+   inode_ptr new_node = make_shared<inode> (file_type::PLAIN_TYPE);
+   get_dirents().insert(direntry(filename, new_node));
+   return new_node;
+}
 
 /** operator<<
  *  allows printing the contents of dirents to on ostream
