@@ -3,6 +3,7 @@
 #include <iostream>
 #include <stdexcept>
 #include <unordered_map>
+#include <numeric>              // for accumulate
 
 using namespace std;
 
@@ -32,8 +33,8 @@ inode_state::inode_state() {
    root = make_shared<inode> (file_type::DIRECTORY_TYPE);
    //root->get_contents()->set_path("/");
    cwd = root;
-   root->contents->get_dirents().insert(pair<string, inode_ptr>(".", root));
-   root->contents->get_dirents().insert(pair<string, inode_ptr>("..", root));
+   root->contents->get_dirents().insert(pair<string, inode_ptr>("./", root));
+   root->contents->get_dirents().insert(pair<string, inode_ptr>("../", root));
 }
 
 const string& inode_state::prompt() const { return prompt_; }
@@ -115,9 +116,11 @@ inode_ptr base_file::mkfile (const string&) {
 
 
 size_t plain_file::size() const {
-   size_t size {0};
+   size_t size = data.size();
    DEBUGF ('i', "size = " << size);
-   return size;
+  // Accumulate the contents of data into one string
+  string result = accumulate(data.begin(),data.end(), string(""));
+  return result.size();
 }
 
 const wordvec& plain_file::readfile() const {
@@ -127,12 +130,15 @@ const wordvec& plain_file::readfile() const {
 
 void plain_file::writefile (const wordvec& words) {
    DEBUGF ('i', words);
+   data = words;
+   return;
 }
 
 size_t directory::size() const {
-   size_t size {0};
-   DEBUGF ('i', "size = " << size);
-   return size;
+  size_t size {0};
+  DEBUGF ('i', "size = " << size);
+  // TODO: Implement size as number of dirents
+  return size;
 }
 
 void directory::remove (const string& filename) {
@@ -152,9 +158,9 @@ inode_ptr directory::mkdir (const string& dirname) {
    // set it to the new inodes path
    new_node->contents->set_path(new_path);
    // insert to the new inode "." , itself
-   new_node->contents->get_dirents().insert(direntry(".", new_node));
+   new_node->contents->get_dirents().insert(direntry("./", new_node));
    // insert to the new inode "..", this->getdirents.at("."))
-   new_node->contents->get_dirents().insert(direntry("..", this->get_dirents().at(".")));
+   new_node->contents->get_dirents().insert(direntry("../", this->get_dirents().at(".")));
    // Insert to the root
    get_dirents().insert(direntry(new_path, new_node));
    cout << "new_node: " << new_node << "\t&new_node: " << &new_node << "\tnew_node->contents: " << new_node->contents << endl
@@ -164,7 +170,10 @@ inode_ptr directory::mkdir (const string& dirname) {
 
 inode_ptr directory::mkfile (const string& filename) {
    DEBUGF ('i', filename);
-   // TODO: check if node at filename already exists
+   // Base Case: file already exists
+   if(get_dirents().find(filename)!=get_dirents().end()) {
+    return get_dirents().find(filename)->second; //return the file
+   }
 
    // create new node
    inode_ptr new_node = make_shared<inode> (file_type::PLAIN_TYPE);

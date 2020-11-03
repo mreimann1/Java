@@ -127,7 +127,7 @@ void fn_ls (inode_state& state, const wordvec& words){
       for (auto &entry : state.get_cwd()->get_contents()->get_dirents()) {
          cout << setw(6) << setprecision(6) << entry.second->get_inode_nr() << "  "
               << setw(6) << setprecision(6) << entry.second->get_contents()->size() << "  " 
-              << entry.first << "/" << endl;
+              << entry.first << endl;
       }
    }
 
@@ -166,6 +166,11 @@ void fn_make (inode_state& state, const wordvec& words){
       inode_ptr dir = state.get_cwd()->get_subdir_at(pathname);   // get a pointer to the directory specified
       cout << "dir: " << dir << endl; //@DELETE
       inode_ptr new_node = dir->get_contents()->mkfile(filename);
+      // Assert that it is not a directory
+      if (new_node->get_contents()->is_directory()) {
+         cout << words[0] << ": " << filename << "is a directory\n";
+         return;
+      }
       new_node->get_contents()->writefile(wordvec(words.begin()+2, words.end()));
       cout << "wordvec(words.begin()+2, words.end()): " << wordvec(words.begin()+2, words.end()) << endl;
    }
