@@ -99,6 +99,24 @@ void fn_cat (inode_state& state, const wordvec& words){
 void fn_cd (inode_state& state, const wordvec& words){
    DEBUGF ('c', state);
    DEBUGF ('c', words);
+
+   // Assert that there are less than 2 arguments
+   if (words.size() > 2) {
+      cout << "cd: too many arguments\n";
+      return;
+   }
+
+   // Split argument into path
+   wordvec path = split(words[1], "/");
+
+   // Assert that path exists
+   if (!path_exists(state, path)) {
+      // error
+      cout << "cd: cannot create directory '" << words[1] << "': No such file or directory\n";
+      return;
+   }
+
+   cout << "TODO: implement changing cwd to specified directory\n";
 }
 
 void fn_echo (inode_state& state, const wordvec& words){
