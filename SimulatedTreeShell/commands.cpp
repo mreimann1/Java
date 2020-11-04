@@ -165,9 +165,10 @@ void fn_ls (inode_state& state, const wordvec& words){
       string this_dir = state.get_cwd()->get_contents()->get_path();
       cout << this_dir << ((this_dir=="." || this_dir=="..") ? ("/:") : (":")) << endl; // print the path header
       for (auto &entry : state.get_cwd()->get_contents()->get_dirents()) {
-         cout << setw(6) << setprecision(6) << entry.second->get_inode_nr() << "  "
-              << setw(6) << setprecision(6) << entry.second->get_contents()->size() << "  " 
-              << entry.first << ((entry.first=="." || entry.first=="..") ? ("/") : ("")) << endl;
+         cout << setw(6) << setprecision(6) << entry.second->get_inode_nr() << "  "          // print the inode number
+              << setw(6) << setprecision(6) << entry.second->get_contents()->size() << "  "  // print the size
+              << entry.first << ((entry.first=="." || entry.first=="..") ? ("/") : (""))     // print the entry
+              << endl;
       }
    }
 }

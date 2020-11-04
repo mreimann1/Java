@@ -171,9 +171,7 @@ inode_ptr directory::mkdir (const string& dirname) {
   // insert to the new inode "..", this->getdirents.at("."))
   new_node->contents->get_dirents().insert(direntry("..", get_dirents().find(".")->second));
   // Insert to the root
-  get_dirents().insert(direntry(new_path, new_node));
-  cout << "new_node: " << new_node << "\t&new_node: " << &new_node << "\tnew_node->contents: " << new_node->contents << endl
-      << "new_node->contents->get_dirents(): " << new_node->contents->get_dirents() << endl;
+  get_dirents().insert(direntry(dirname+'/', new_node));
   return new_node;
 }
 
