@@ -71,18 +71,31 @@ inode_ptr inode::get_subdir_at(wordvec& pathname) {
   inode_ptr curr = make_shared<inode> (*this);
   // Find the subdirectory that corresponds to element of pathname
   for (int i=0; i<int(pathname.size()); ++i) {
+    // Special case: "."
+    if(pathname[i] == ".") {
+       cout << "'.' found\n"; //@DELETE
+       continue;
+    }
+    string path_to_find = pathname[i] + '/';
+    // Special case: ".."
+    if(pathname[i] == "..") {
+       cout << "'..' found\n"; //@DELETE
+       path_to_find = pathname[i];
+    }
     // Assert that curr is a directory
     if (!curr->get_contents()->is_directory()) {
-      cout << "Error in get_subdir_at: pathname["<< i << "]: " << pathname[i] << " DNE.\n";
+      cout << "Error in get_subdir_at: pathname: " << path_to_find << " DNE.\n";
       return nullptr;
     }
+    cout << "Line: " << __LINE__ << endl;
     // Assert that the entry at the next directory exists
-    if (curr->get_contents()->get_dirents().find(pathname[i])==curr->get_contents()->get_dirents().end()) {
-      cout << "Error in get_subdir_at: pathname["<< i << "]: " << pathname[i] << " DNE.\n";
+    if (curr->get_contents()->get_dirents().find(path_to_find)==curr->get_contents()->get_dirents().end()) {
+      cout << "Error in get_subdir_at: path_to_find: " << path_to_find << " DNE.\n";
       return curr;
     }
     // Move current node to the next directory entry
-    curr = curr->get_contents()->get_dirents().find(pathname[i])->second;
+    cout << "Line: " << __LINE__ << endl;
+    curr = curr->get_contents()->get_dirents().find(path_to_find)->second;
     cout << "curr: " << curr << " typeid(curr): " << typeid(curr).name() << endl;
 
   }

@@ -55,14 +55,20 @@ bool path_exists(inode_state& state, const wordvec& path) {
    cout << "in path_exists..\n";
    // loop through all strings in path
    for (int i=0; i<int(path.size()); ++i) {
-      if (path[i] == "."){// if "." is in path, ignore
+      if (path[i] == ".") {// if "." is in path, ignore
          cout << "'.' found...\n";
          continue;
       }
+      string path_to_find = path[i] + '/';
       //TODO: Make special case for .. backdirectory
+      if (path[i] == "..") {// if "." is in path, go back one directory
+         cout << "'..' found...\n";
+         path_to_find = path[i];
+      }
+      
       inode_ptr next_node = NULL;
-      if( state.get_cwd()->get_contents()->get_dirents().find(path[i]+'/') != state.get_cwd()->get_contents()->get_dirents().end() )
-         next_node = state.get_cwd()->get_contents()->get_dirents()[path[i]+'/'];
+      if( state.get_cwd()->get_contents()->get_dirents().find(path_to_find) != state.get_cwd()->get_contents()->get_dirents().end() )
+         next_node = state.get_cwd()->get_contents()->get_dirents()[path_to_find];
       if(next_node!=NULL && next_node->get_contents()->is_directory()) // if the node exists and is a directory
          state.set_cwd(next_node);
       else {                                             // if the specified directory DNE
@@ -127,20 +133,10 @@ void fn_cd (inode_state& state, const wordvec& words){
       cout << "cd: " << words[1] << ": No such file or directory\n";
       return;
    }
-   cout << " path: " << path << " line: " << __LINE__ << endl;
    // go into each directory specified by path
    inode_ptr new_dir = state.get_cwd();
-   cout << "new_dir: " << new_dir << " path: " << path << " line: " << __LINE__ << endl;
-   for (int i=0; i<int(path.size()); i++) {
-      if(path[i] == ".") {
-         cout << "'.' found\n"; //@DELETE
-         continue;
-      }
-      cout << "cding into " << path[i] << endl;
-      new_dir = new_dir->get_contents()->get_dirents()[path[i]+"/"];
-   }
+   new_dir = new_dir->get_subdir_at(path);
 
-   cout << "new_dir: " << new_dir << endl;
    state.set_cwd(new_dir);
 }
 
@@ -164,18 +160,16 @@ void fn_ls (inode_state& state, const wordvec& words){
    cout << "state: " << state << endl;
 
    // Base Case: No pathname argument provided
-   //    print the entries of cwd
+   //    print the entries of cwd - if ".." or "." print a "/" too
    if (words.size() < 2) {
-      cout << state.get_cwd()->get_contents()->get_path() << "/:" << endl; // print the path header
+      string this_dir = state.get_cwd()->get_contents()->get_path();
+      cout << this_dir << ((this_dir=="." || this_dir=="..") ? ("/:") : (":")) << endl; // print the path header
       for (auto &entry : state.get_cwd()->get_contents()->get_dirents()) {
          cout << setw(6) << setprecision(6) << entry.second->get_inode_nr() << "  "
               << setw(6) << setprecision(6) << entry.second->get_contents()->size() << "  " 
               << entry.first << ((entry.first=="." || entry.first=="..") ? ("/") : ("")) << endl;
       }
    }
-
-   // TODO: implement pathname
-
 }
 
 void fn_lsr (inode_state& state, const wordvec& words){
