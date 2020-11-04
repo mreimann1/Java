@@ -52,8 +52,14 @@ int exit_status_message() {
  **/
 bool path_exists(inode_state& state, const wordvec& path) {
    inode_ptr start = state.get_cwd();                    // save cwd so that it can be returned
+   cout << "in path_exists..\n";
    // loop through all strings in path
    for (int i=0; i<int(path.size()); ++i) {
+      if (path[i] == "."){// if "." is in path, ignore
+         cout << "'.' found...\n";
+         continue;
+      }
+      //TODO: Make special case for .. backdirectory
       inode_ptr next_node = NULL;
       if( state.get_cwd()->get_contents()->get_dirents().find(path[i]+'/') != state.get_cwd()->get_contents()->get_dirents().end() )
          next_node = state.get_cwd()->get_contents()->get_dirents()[path[i]+'/'];
@@ -106,17 +112,36 @@ void fn_cd (inode_state& state, const wordvec& words){
       return;
    }
 
+   // Case: no arguments - cd into root
+   if(words.size() < 2) {
+      state.set_cwd(state.get_root());
+      return;
+   }
+
    // Split argument into path
    wordvec path = split(words[1], "/");
 
    // Assert that path exists
    if (!path_exists(state, path)) {
       // error
-      cout << "cd: cannot create directory '" << words[1] << "': No such file or directory\n";
+      cout << "cd: " << words[1] << ": No such file or directory\n";
       return;
    }
+   cout << " path: " << path << " line: " << __LINE__ << endl;
+   // go into each directory specified by path
+   inode_ptr new_dir = state.get_cwd();
+   cout << "new_dir: " << new_dir << " path: " << path << " line: " << __LINE__ << endl;
+   for (int i=0; i<int(path.size()); i++) {
+      if(path[i] == ".") {
+         cout << "'.' found\n"; //@DELETE
+         continue;
+      }
+      cout << "cding into " << path[i] << endl;
+      new_dir = new_dir->get_contents()->get_dirents()[path[i]+"/"];
+   }
 
-   cout << "TODO: implement changing cwd to specified directory\n";
+   cout << "new_dir: " << new_dir << endl;
+   state.set_cwd(new_dir);
 }
 
 void fn_echo (inode_state& state, const wordvec& words){
@@ -235,8 +260,6 @@ void fn_mkdir (inode_state& state, const wordvec& words){
       // Check if parent path exists
       wordvec parent_path (path.begin(), path.end()-1);
       cout << "parent_path: " << parent_path << endl;
-
-      
       if (!path_exists(state, parent_path)) {
          cout << "mkdir: cannot create directory '" << words[i] << "': No such file or directory\n";
          continue;

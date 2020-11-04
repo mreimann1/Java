@@ -46,6 +46,7 @@ class inode_state {
       const string& prompt() const;
       inode_ptr get_cwd() {return cwd;}
       void set_cwd(inode_ptr new_dir) {cwd = new_dir;}
+      inode_ptr get_root() {return root;}
 };
 
 // class inode -
