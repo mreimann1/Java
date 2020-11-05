@@ -109,7 +109,7 @@ void plain_file::writefile (const wordvec& words) {
 size_t directory::size() const {
   size_t size {0};
   DEBUGF ('i', "size = " << size);
-  // TODO: Implement size as number of dirents
+  size = dirents.size()-2;
   return size;
 }
 

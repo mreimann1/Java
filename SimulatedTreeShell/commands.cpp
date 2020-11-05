@@ -388,6 +388,52 @@ void fn_pwd (inode_state& state, const wordvec& words){
 void fn_rm (inode_state& state, const wordvec& words){
    DEBUGF ('c', state);
    DEBUGF ('c', words);
+
+   // Assert that words has at least one argument
+   if (words.size() < 2) {
+      // Print error
+      cout << "rm: missing operand\n";
+      return;
+   }
+
+   // Loop through arguments
+   for (int i=1; i< int(words.size()); i++) {      
+      // Split argument by '/' to get pathname
+      wordvec dir_name = split(words[i], "/");
+
+      // Get parent directory name and filename
+      string filename = dir_name.back();
+      dir_name.pop_back();             
+
+      // Assert that parent directory exists
+      if (!path_exists(state, dir_name)) {
+         cout << "rm: cannot create directory '" << words[i] << "': No such file or directory\n";
+         continue;
+      }
+
+      // Get pointer to parent directory
+      inode_ptr parent_dir = get_subdir_at(state.get_cwd(), dir_name);
+      
+
+      // Assert that file exists
+      if (parent_dir->get_contents()->get_dirents().find(filename) == parent_dir->get_contents()->get_dirents().end()) {
+         cout << "rm: cannot create directory '" << words[i] << "': No such file or directory\n";
+         continue;
+      }
+
+      // Get pointer to file
+      inode_ptr file = parent_dir->get_contents()->get_dirents().find(filename)->second;
+
+      // if it is a plainfile, delete it
+      if (!file->get_contents()->is_directory()) {
+         parent_dir->get_contents()->get_dirents().erase(filename);
+         cout << "FILE: " << filename << " ERASED\n";
+         continue;
+      }
+      else {
+         cout << "TODO: implement directory removal.\n";
+      }
+   }
 }
 
 void fn_rmr (inode_state& state, const wordvec& words){

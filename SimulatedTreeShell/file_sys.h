@@ -108,6 +108,7 @@ class base_file {
       virtual string& get_path() {throw file_error ("is a " + error_file_type());}
       virtual void set_path(const string&) {throw file_error ("is a " + error_file_type());}
       virtual bool is_directory() {return false;}
+
 };
 
 // class plain_file -
