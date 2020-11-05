@@ -106,6 +106,51 @@ void fn_comment (inode_state& state, const wordvec& words) {
 void fn_cat (inode_state& state, const wordvec& words){
    DEBUGF ('c', state);
    DEBUGF ('c', words);
+
+   // Base case: No pathname specified
+   if (words.size() < 2) {
+      cout << "cat: error: No pathname specified\n";
+      return;
+   }
+
+   // Loop through arguments
+   for (int i=1; i<int(words.size()); i++) {
+      cout << "state: " <<  state << " line: " << __LINE__ << endl;
+      //    parse pathname
+      wordvec pathname = split(words[i], "/");
+      cout << "pathname: " << pathname << endl;//@DELETE
+      string filename = pathname[pathname.size()-1];
+      // Error condition: file is a directory
+      if (path_exists(state, pathname)) {
+         cout << "cat: " << words[i] << ": Is a directory.\n";
+         continue;
+      }
+
+      cout << "state: " <<  state << " line: " << __LINE__ << endl;
+      // Error condition: file does not exist
+      wordvec dir_name = pathname;
+      dir_name.pop_back(); 
+      cout << "dir_name: " << dir_name << endl;//@DELETE
+      if (!path_exists(state,dir_name)) {       // check parent directory
+         cout << "cat: " << words[i] << ": No such file or directory\n";
+         continue;
+      }
+      cout << "state: " <<  state << " line: " << __LINE__ << endl;
+      // Check parent directory for the file
+      inode_ptr parent_dir = state.get_cwd()->get_subdir_at(dir_name);
+      cout << "parent_dir: " << parent_dir << endl;
+      if (parent_dir->get_contents()->get_dirents().find(filename) == parent_dir->get_contents()->get_dirents().find(filename)) {
+         cout << "cat: " << words[i] << ": No such file or directory\n";
+         cout << "state: " <<  state << " line: " << __LINE__ << endl;
+         continue;
+      }
+      cout << "state: " <<  state << " line: " << __LINE__ << endl;
+      // Print contents of file
+      inode_ptr file = parent_dir->get_contents()->get_dirents().find(filename)->second;
+      cout << "file: " << file << " TODO: print data...\n";
+      cout << file->get_contents()->readfile();
+   }
+
 }
 
 void fn_cd (inode_state& state, const wordvec& words){
@@ -163,7 +208,7 @@ void fn_ls (inode_state& state, const wordvec& words){
    //    print the entries of cwd - if ".." or "." print a "/" too
    if (words.size() < 2) {
       string this_dir = state.get_cwd()->get_contents()->get_path();
-      cout << this_dir << ((this_dir=="." || this_dir=="..") ? ("/:") : (":")) << endl; // print the path header
+      cout << ((this_dir == "") ? ("/") : (this_dir)) << ":" << endl; // print the path header
       for (auto &entry : state.get_cwd()->get_contents()->get_dirents()) {
          cout << setw(6) << setprecision(6) << entry.second->get_inode_nr() << "  "          // print the inode number
               << setw(6) << setprecision(6) << entry.second->get_contents()->size() << "  "  // print the size
@@ -288,12 +333,20 @@ void fn_mkdir (inode_state& state, const wordvec& words){
 void fn_prompt (inode_state& state, const wordvec& words){
    DEBUGF ('c', state);
    DEBUGF ('c', words);
+   // combine words into a string
+   string new_prompt = "";
+   for (int i=1; i<int(words.size()); i++) {
+      new_prompt += words[i];
+   }
+   cout << "new_prompt: " << new_prompt << endl;
+   state.set_prompt(new_prompt);
+   return;
 }
 
 void fn_pwd (inode_state& state, const wordvec& words){
    DEBUGF ('c', state);
    DEBUGF ('c', words);
-   cout << state.get_cwd()->get_contents()->get_path() << "/" << endl;
+   cout << state.get_cwd()->get_contents()->get_path() << endl;
    return;
 }
 

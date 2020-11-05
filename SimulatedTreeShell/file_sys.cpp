@@ -64,11 +64,17 @@ int inode::get_inode_nr() const {
 
 /** get_subdir_at
  *  @brief: returns an inode_ptr to the subdirectory at a specified path
- *  @param: wordvec& pathname - a vector of pathnames to traverse.
+ *  @param: inode_ptr pointer_to_this - a pointer to the node that this is called from
+ *          wordvec& pathname - a vector of pathnames to traverse.
  **/
-inode_ptr inode::get_subdir_at(wordvec& pathname) {
+inode_ptr inode::get_subdir_at(inode_ptr pointer_to_this, wordvec& pathname) {
+  // Assert pointer_to_this is correct
+  if(pointer_to_this->get_inode_nr() !=  inode_nr) {
+    cout << "Error: Pass correct inode_ptr as argument to get_subdir_at.\n";
+    return pointer_to_this;
+  }
   // Base case: pathname is empty. Return this
-  inode_ptr curr = make_shared<inode> (*this);
+  inode_ptr curr = pointer_to_this;
   // Find the subdirectory that corresponds to element of pathname
   for (int i=0; i<int(pathname.size()); ++i) {
     // Special case: "."
@@ -163,7 +169,7 @@ inode_ptr directory::mkdir (const string& dirname) {
   // create a inode pointer like in root
   inode_ptr new_node = make_shared<inode> (file_type::DIRECTORY_TYPE);
   // concatenate parentpath slash directory
-  string new_path = path + dirname + '/';
+  string new_path = path + "/" + dirname ;
   // set it to the new inodes path
   new_node->contents->set_path(new_path);
   // insert to the new inode "." , itself
