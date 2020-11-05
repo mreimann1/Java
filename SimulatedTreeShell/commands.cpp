@@ -72,6 +72,7 @@ bool path_exists(inode_state& state, const wordvec& path) {
       if(next_node!=NULL && next_node->get_contents()->is_directory()) // if the node exists and is a directory
          state.set_cwd(next_node);
       else {                                             // if the specified directory DNE
+         state.set_cwd(start);
          return false;
       }
    }
@@ -164,7 +165,7 @@ void fn_cat (inode_state& state, const wordvec& words){
       cout << "state: " <<  state << " line: " << __LINE__ << endl;
       // Error condition: file does not exist
       wordvec dir_name = pathname;
-      dir_name.pop_back(); 
+      dir_name.pop_back();                      // remove the filename from directoryname
       cout << "dir_name: " << dir_name << endl;//@DELETE
       if (!path_exists(state,dir_name)) {       // check parent directory
          cout << "cat: " << words[i] << ": No such file or directory\n";
@@ -174,7 +175,7 @@ void fn_cat (inode_state& state, const wordvec& words){
       // Check parent directory for the file
       inode_ptr parent_dir = get_subdir_at(state.get_cwd(), dir_name);
       cout << "parent_dir: " << parent_dir << endl;
-      if (parent_dir->get_contents()->get_dirents().find(filename) == parent_dir->get_contents()->get_dirents().find(filename)) {
+      if (parent_dir->get_contents()->get_dirents().find(filename) == parent_dir->get_contents()->get_dirents().end()) {
          cout << "cat: " << words[i] << ": No such file or directory\n";
          cout << "state: " <<  state << " line: " << __LINE__ << endl;
          continue;
@@ -182,8 +183,7 @@ void fn_cat (inode_state& state, const wordvec& words){
       cout << "state: " <<  state << " line: " << __LINE__ << endl;
       // Print contents of file
       inode_ptr file = parent_dir->get_contents()->get_dirents().find(filename)->second;
-      cout << "file: " << file << " TODO: print data...\n";
-      cout << file->get_contents()->readfile();
+      cout << file->get_contents()->readfile() << endl;
    }
 
 }
