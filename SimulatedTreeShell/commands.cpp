@@ -407,31 +407,47 @@ void fn_rm (inode_state& state, const wordvec& words){
 
       // Assert that parent directory exists
       if (!path_exists(state, dir_name)) {
-         cout << "rm: cannot create directory '" << words[i] << "': No such file or directory\n";
+         cout << "rm: cannot remove directory '" << words[i] << "': No such file or directory\n";
          continue;
       }
 
       // Get pointer to parent directory
       inode_ptr parent_dir = get_subdir_at(state.get_cwd(), dir_name);
       
+      cout << "path found. dir_name: " << dir_name << " filename: " << filename << " parent_dir: " << parent_dir << endl;
+
+      // Get a boolean for if the file is a plain type or directory type
+      bool pf_found = !(parent_dir->get_contents()->get_dirents().find(filename) == parent_dir->get_contents()->get_dirents().end());
+      bool df_found = !(parent_dir->get_contents()->get_dirents().find(filename+'/') == parent_dir->get_contents()->get_dirents().end());
 
       // Assert that file exists
-      if (parent_dir->get_contents()->get_dirents().find(filename) == parent_dir->get_contents()->get_dirents().end()) {
-         cout << "rm: cannot create directory '" << words[i] << "': No such file or directory\n";
+      if (!(pf_found or df_found)) {
+         cout << "rm: cannot remove directory '" << words[i] << "': No such file or directory\n";
          continue;
       }
 
-      // Get pointer to file
-      inode_ptr file = parent_dir->get_contents()->get_dirents().find(filename)->second;
-
+      cout << "pf_found: " << pf_found << " df_found: " << df_found << endl;
       // if it is a plainfile, delete it
-      if (!file->get_contents()->is_directory()) {
+      if (pf_found) {
          parent_dir->get_contents()->get_dirents().erase(filename);
          cout << "FILE: " << filename << " ERASED\n";
          continue;
       }
-      else {
-         cout << "TODO: implement directory removal.\n";
+      else { // file is a directory
+         inode_ptr file = parent_dir->get_contents()->get_dirents()[filename+'/'];
+
+         // Assert directory is not empty
+         if (file->get_contents()->size()) {
+            cout << "rm: cannot delete non-empty directory\n";
+            continue;
+         }
+
+         // Remove "." and ".." from directory
+         file->get_contents()->get_dirents().erase(".");
+         file->get_contents()->get_dirents().erase("..");
+         
+         // Remove file from parent
+         parent_dir->get_contents()->get_dirents().erase(filename+'/');
       }
    }
 }
