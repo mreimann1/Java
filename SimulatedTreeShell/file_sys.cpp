@@ -61,53 +61,6 @@ int inode::get_inode_nr() const {
    DEBUGF ('i', "inode = " << inode_nr);
    return inode_nr;
 }
-
-/** get_subdir_at
- *  @brief: returns an inode_ptr to the subdirectory at a specified path
- *  @param: inode_ptr pointer_to_this - a pointer to the node that this is called from
- *          wordvec& pathname - a vector of pathnames to traverse.
- **/
-inode_ptr inode::get_subdir_at(inode_ptr pointer_to_this, wordvec& pathname) {
-  // Assert pointer_to_this is correct
-  if(pointer_to_this->get_inode_nr() !=  inode_nr) {
-    cout << "Error: Pass correct inode_ptr as argument to get_subdir_at.\n";
-    return pointer_to_this;
-  }
-  // Base case: pathname is empty. Return this
-  inode_ptr curr = pointer_to_this;
-  // Find the subdirectory that corresponds to element of pathname
-  for (int i=0; i<int(pathname.size()); ++i) {
-    // Special case: "."
-    if(pathname[i] == ".") {
-       cout << "'.' found\n"; //@DELETE
-       continue;
-    }
-    string path_to_find = pathname[i] + '/';
-    // Special case: ".."
-    if(pathname[i] == "..") {
-       cout << "'..' found\n"; //@DELETE
-       path_to_find = pathname[i];
-    }
-    // Assert that curr is a directory
-    if (!curr->get_contents()->is_directory()) {
-      cout << "Error in get_subdir_at: pathname: " << path_to_find << " DNE.\n";
-      return nullptr;
-    }
-    cout << "Line: " << __LINE__ << endl;
-    // Assert that the entry at the next directory exists
-    if (curr->get_contents()->get_dirents().find(path_to_find)==curr->get_contents()->get_dirents().end()) {
-      cout << "Error in get_subdir_at: path_to_find: " << path_to_find << " DNE.\n";
-      return curr;
-    }
-    // Move current node to the next directory entry
-    cout << "Line: " << __LINE__ << endl;
-    curr = curr->get_contents()->get_dirents().find(path_to_find)->second;
-    cout << "curr: " << curr << " typeid(curr): " << typeid(curr).name() << endl;
-
-  }
-  return curr;
-}
-
 
 file_error::file_error (const string& what):
             runtime_error (what) {

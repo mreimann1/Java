@@ -81,20 +81,55 @@ bool path_exists(inode_state& state, const wordvec& path) {
    return true;
 }
 
-// /** path_exists
-//  *  @brief: returns true if directory path exists as child of root.
-//  *  @param: root - the root node
-//  *          path - the list of directories
-//  **/
-// bool path_exists(inode_ptr& root, const wordvec& path) {
-//    inode_ptr start = root;                    // save cwd so that it can be returned
 
-//    // loop through all strings in path
-//    for (int i=0; i<int(path.size()); ++i) {
+/** get_subdir_at
+ *  @brief: returns an inode_ptr to the subdirectory at a specified path
+ *          functions behavior assumes that the subdirectory exists
+ *          NOTE: Call path_exists before calling get_subdir_at
+ *  @param: inode_ptr start - a pointer to the node to start looking for subdirectories
+ *          wordvec& pathname - a vector of pathnames to traverse.
+ **/
+inode_ptr get_subdir_at(inode_ptr start, wordvec& pathname) {
+  // Assert start not null
+  if(!start) {
+    cout << "Error: get_subdir_at: start is null\n";
+    return start;
+  } 
+  // Start search with a pointer to start node
+  inode_ptr curr = start;
+  // Find the subdirectory that corresponds to element of pathname
+  for (int i=0; i<int(pathname.size()); ++i) {
+    // Special case: "."
+    if(pathname[i] == ".") {
+       cout << "'.' found\n"; //@DELETE
+       continue;
+    }
+    string path_to_find = pathname[i] + '/';
+    // Special case: ".."
+    if(pathname[i] == "..") {
+       cout << "'..' found\n"; //@DELETE
+       path_to_find = pathname[i];
+    }
+    // Assert that curr is a directory
+    if (!curr->get_contents()->is_directory()) {
+      cout << "Error in get_subdir_at: pathname: " << path_to_find << " DNE.\n";
+      return nullptr;
+    }
+    cout << "Line: " << __LINE__ << endl;
+    // Assert that the entry at the next directory exists
+    if (curr->get_contents()->get_dirents().find(path_to_find)==curr->get_contents()->get_dirents().end()) {
+      cout << "Error in get_subdir_at: path_to_find: " << path_to_find << " DNE.\n";
+      return curr;
+    }
+    // Move current node to the next directory entry
+    cout << "Line: " << __LINE__ << endl;
+    curr = curr->get_contents()->get_dirents().find(path_to_find)->second;
+    cout << "curr: " << curr << " typeid(curr): " << typeid(curr).name() << endl;
 
-//    }
-//    return true;
-// }
+  }
+  return curr;
+}
+
 
 void fn_comment (inode_state& state, const wordvec& words) {
    // blank function
@@ -137,7 +172,7 @@ void fn_cat (inode_state& state, const wordvec& words){
       }
       cout << "state: " <<  state << " line: " << __LINE__ << endl;
       // Check parent directory for the file
-      inode_ptr parent_dir = state.get_cwd()->get_subdir_at(dir_name);
+      inode_ptr parent_dir = get_subdir_at(state.get_cwd(), dir_name);
       cout << "parent_dir: " << parent_dir << endl;
       if (parent_dir->get_contents()->get_dirents().find(filename) == parent_dir->get_contents()->get_dirents().find(filename)) {
          cout << "cat: " << words[i] << ": No such file or directory\n";
@@ -180,7 +215,7 @@ void fn_cd (inode_state& state, const wordvec& words){
    }
    // go into each directory specified by path
    inode_ptr new_dir = state.get_cwd();
-   new_dir = new_dir->get_subdir_at(path);
+   new_dir = get_subdir_at(new_dir, path);
 
    state.set_cwd(new_dir);
 }
@@ -246,7 +281,7 @@ void fn_make (inode_state& state, const wordvec& words){
    cout << "path_good: " << path_good << endl;//@DELETE
    if(path_good) {
       //    mkfile with name filename in directory pathname
-      inode_ptr dir = state.get_cwd()->get_subdir_at(pathname);   // get a pointer to the directory specified
+      inode_ptr dir = get_subdir_at(state.get_cwd(),pathname);   // get a pointer to the directory specified
       cout << "dir: " << dir << endl; //@DELETE
       inode_ptr new_node = dir->get_contents()->mkfile(filename);
       // Assert that it is not a directory
