@@ -233,17 +233,58 @@ void fn_exit (inode_state& state, const wordvec& words){
    throw ysh_exit();
 }
 
+/** print_subdir
+ *  @brief: helper fcn for ls
+ *          print the contents of a specified directory
+ *          assumes directory path is valid
+ **/
+void print_subdir (inode_state& state, const wordvec& pathname) {
+   // Copy pathname
+   wordvec dir_name = pathname;
+
+   // Get the pointer to the subdirectory specified
+   inode_ptr dir_ptr = get_subdir_at(state.get_cwd(), dir_name);
+
+   // Get the path name
+   string this_dir = dir_ptr->get_contents()->get_path();
+
+   // Loop through all
+   cout << ((this_dir == "") ? ("/") : (this_dir)) << ":" << endl;                           // print the path header
+   for (auto &entry : dir_ptr->get_contents()->get_dirents()) {
+      cout << setw(6) << setprecision(6) << entry.second->get_inode_nr() << "  "             // print the inode number
+           << setw(6) << setprecision(6) << entry.second->get_contents()->size() << "  "     // print the size
+           << entry.first << ((entry.first=="." || entry.first=="..") ? ("/") : (""))        // print the entry
+           << endl;
+   }
+   return;
+}
+
+/** print_cwd
+ *  @brief: helper fcn for ls and lsr
+ *          print the contents of state cwd
+ **/
+void print_cwd(inode_state& state) {
+   string this_dir = state.get_cwd()->get_contents()->get_path();                         // Get path of this directory for path header
+   cout << ((this_dir == "") ? ("/") : (this_dir)) << ":" << endl;                        // print the path header
+   for (auto &entry : state.get_cwd()->get_contents()->get_dirents()) {
+      cout << setw(6) << setprecision(6) << entry.second->get_inode_nr() << "  "          // print the inode number
+           << setw(6) << setprecision(6) << entry.second->get_contents()->size() << "  "  // print the size
+           << entry.first << ((entry.first=="." || entry.first=="..") ? ("/") : (""))     // print the entry
+           << endl;
+   }
+   return;
+}
+
 void fn_ls (inode_state& state, const wordvec& words){
    DEBUGF ('c', state);
    DEBUGF ('c', words);
 
    cout << "state: " << state << endl;
 
-   // Base Case: No pathname argument provided
-   //    print the entries of cwd - if ".." or "." print a "/" too
+   // print the entries of cwd - if ".." or "." print a "/" too
    if (words.size() < 2) {
       string this_dir = state.get_cwd()->get_contents()->get_path();
-      cout << ((this_dir == "") ? ("/") : (this_dir)) << ":" << endl; // print the path header
+      cout << ((this_dir == "") ? ("/") : (this_dir)) << ":" << endl;                        // print the path header
       for (auto &entry : state.get_cwd()->get_contents()->get_dirents()) {
          cout << setw(6) << setprecision(6) << entry.second->get_inode_nr() << "  "          // print the inode number
               << setw(6) << setprecision(6) << entry.second->get_contents()->size() << "  "  // print the size
@@ -251,11 +292,51 @@ void fn_ls (inode_state& state, const wordvec& words){
               << endl;
       }
    }
+   // Loop through arguments
+   for (int i=1; i<int(words.size()); i++) {
+      wordvec pathname = split(words[i], "/");           // Split argument to pathname
+      print_subdir (state, pathname);                    // Print subdirectory at pathname
+   }
+}
+
+/** preorder_traversal
+ *  @brief: helper function for lsr
+ *          prints contents of state via preorder traversal
+ *          recursively changes state
+ **/
+void preorder_traversal (inode_state& state) {
+   // Print contents of current state cwd
+   print_cwd(state);
+   // Save cwd as start
+   inode_ptr start = state.get_cwd();
+   // Loop through cwd dirents
+   for (auto &entry : state.get_cwd()->get_contents()->get_dirents()) {
+      if ( (entry.first != ".") and (entry.first != "..")         // if entry isn't "." or ".."
+         and (entry.second->get_contents()->is_directory()) ) {   // if entry is a directory
+         state.set_cwd(entry.second); // set cwd to this entry
+         preorder_traversal (state); // call preorder traversal
+      }
+   }
+   state.set_cwd(start); // Set state back to start
 }
 
 void fn_lsr (inode_state& state, const wordvec& words){
    DEBUGF ('c', state);
    DEBUGF ('c', words);
+   // Base case: no arguments
+   if ( words.size() < 2) {
+      preorder_traversal(state);
+      return;
+   }
+   for (int i=1; i<int(words.size()); i++) {  
+      wordvec pathname = split(words[i],"/");                        // Get pathname
+      inode_ptr start = state.get_cwd();                             // Save cwd to start
+      inode_ptr dir = get_subdir_at(start, pathname);                // Get directory specified by pathname
+      state.set_cwd(dir);                                            // Set cwd to specified directory
+      preorder_traversal(state);                                     // Start preorder traversal from here
+      state.set_cwd(start);                                          // Set cwd back to start
+   }
+   return;
 }
 
 void fn_make (inode_state& state, const wordvec& words){
