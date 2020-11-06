@@ -43,6 +43,7 @@ class inode_state {
       inode_state (const inode_state&) = delete; // copy ctor
       inode_state& operator= (const inode_state&) = delete; // op=
       inode_state();
+      ~inode_state(); // destructor
       const string& prompt() const;
       void set_prompt(string& new_prompt) {prompt_ = new_prompt;}
       inode_ptr get_cwd() {return cwd;}
@@ -166,9 +167,9 @@ class directory: public base_file {
       virtual void remove (const string& filename) override;
       virtual inode_ptr mkdir (const string& dirname) override;
       virtual inode_ptr mkfile (const string& filename) override;
-      virtual map<string, inode_ptr>& get_dirents() override{return dirents;} // dirents getter
-      virtual string& get_path() override{return path;}                       // path getter
-      virtual void set_path(const string& new_path) override{path = new_path;}// path setter
+      virtual map<string, inode_ptr>& get_dirents() override{return dirents;} 
+      virtual string& get_path() override{return path;}                       
+      virtual void set_path(const string& new_path) override{path = new_path;}
       virtual bool is_directory() {return true;}
 };
 

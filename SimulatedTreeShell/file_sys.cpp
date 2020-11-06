@@ -33,8 +33,13 @@ inode_state::inode_state() {
    root = make_shared<inode> (file_type::DIRECTORY_TYPE);
    //root->get_contents()->set_path("/");
    cwd = root;
-   root->contents->get_dirents().insert(pair<string, inode_ptr>(".", root));
-   root->contents->get_dirents().insert(pair<string, inode_ptr>("..", root));
+   root->contents->get_dirents().insert(direntry(".", root));
+   root->contents->get_dirents().insert(direntry("..", root));
+}
+
+inode_state::~inode_state() {
+  cwd = nullptr;
+  root = nullptr;
 }
 
 const string& inode_state::prompt() const { return prompt_; }
@@ -91,8 +96,11 @@ size_t plain_file::size() const {
    size_t size = data.size();
    DEBUGF ('i', "size = " << size);
   // Accumulate the contents of data into one string
-  string result = accumulate(data.begin(),data.end(), string(""));
-  return result.size();
+  string result = "";
+  for (int i=0;i<int(size);++i){
+    result += data[i];
+  }
+  return result.size()+size-1;
 }
 
 const wordvec& plain_file::readfile() const {
@@ -109,7 +117,7 @@ void plain_file::writefile (const wordvec& words) {
 size_t directory::size() const {
   size_t size {0};
   DEBUGF ('i', "size = " << size);
-  size = dirents.size()-2;
+  size = dirents.size();
   return size;
 }
 
@@ -126,9 +134,11 @@ inode_ptr directory::mkdir (const string& dirname) {
   // set it to the new inodes path
   new_node->contents->set_path(new_path);
   // insert to the new inode "." , itself
-  new_node->contents->get_dirents().insert(direntry(".", new_node));
+  new_node->contents->get_dirents().insert(
+    direntry(".", new_node));
   // insert to the new inode "..", this->getdirents.at("."))
-  new_node->contents->get_dirents().insert(direntry("..", get_dirents().find(".")->second));
+  new_node->contents->get_dirents().insert(
+    direntry("..", get_dirents().find(".")->second));
   // Insert to the root
   get_dirents().insert(direntry(dirname+'/', new_node));
   return new_node;
@@ -150,11 +160,14 @@ inode_ptr directory::mkfile (const string& filename) {
 /** operator<<
  *  allows printing the contents of dirents to on ostream
  **/
-ostream& operator<< (ostream& out, const map<string,inode_ptr>& dirents) { 
+using m_s_i = map<string,inode_ptr>; //for shortening column widths
+ostream& operator<< (ostream& out, const m_s_i& dirents) { 
   DEBUGF ('i', "<<dirents");
   for (auto it=dirents.begin(); it!=dirents.end(); it++) {
     out << "[" << it->first  << "]: ["
-        << it->second << "] typeid(it->second): " << typeid(it->second).name() << " typeid(inode_ptr): " << typeid(inode_ptr).name() << "\t"; 
+        << it->second << "] typeid(it->second): " 
+        << typeid(it->second).name()
+        << " typeid(inode_ptr): " << typeid(inode_ptr).name() << "\t";
   }
   out << endl;
   return out;
