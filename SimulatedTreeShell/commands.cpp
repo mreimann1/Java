@@ -16,6 +16,7 @@ command_hash cmd_hash {
    {"prompt", fn_prompt},
    {"pwd"   , fn_pwd   },
    {"rm"    , fn_rm    },
+   {"rmr"   , fn_rmr   },
 };
 
 command_fn find_command_fn (const string& cmd) {
@@ -311,10 +312,10 @@ void preorder_traversal (inode_state& state) {
    inode_ptr start = state.get_cwd();
    // Loop through cwd dirents
    for (auto &entry : state.get_cwd()->get_contents()->get_dirents()) {
-      if ( (entry.first != ".") and (entry.first != "..")         // if entry isn't "." or ".."
-         and (entry.second->get_contents()->is_directory()) ) {   // if entry is a directory
-         state.set_cwd(entry.second); // set cwd to this entry
-         preorder_traversal (state); // call preorder traversal
+      if ( (entry.first != ".") and (entry.first != "..")            // if entry isn't "." or ".."
+         and (entry.second->get_contents()->is_directory()) ) {      // if entry is a directory
+         state.set_cwd(entry.second);                                // set cwd to this entry
+         preorder_traversal (state);                                 // call preorder traversal
       }
    }
    state.set_cwd(start); // Set state back to start
@@ -328,8 +329,12 @@ void fn_lsr (inode_state& state, const wordvec& words){
       preorder_traversal(state);
       return;
    }
-   for (int i=1; i<int(words.size()); i++) {  
+   for (int i=1; i<int(words.size()); ++i) {  
       wordvec pathname = split(words[i],"/");                        // Get pathname
+      if (!path_exists(state, pathname)) {
+         cout << "lsr: " << words[i] << ": no such directory\n";
+         continue;
+      }
       inode_ptr start = state.get_cwd();                             // Save cwd to start
       inode_ptr dir = get_subdir_at(start, pathname);                // Get directory specified by pathname
       state.set_cwd(dir);                                            // Set cwd to specified directory
@@ -387,62 +392,31 @@ void fn_mkdir (inode_state& state, const wordvec& words){
    }
 
    // For all directory arguments specified in words
-   for (int i=1; i< int(words.size()); i++) {
-      // TODO: check if path is absolute (starts with '/') or relative:
-      //       if words[i] is an absolute pathname:
-      //          error if path already exists
-      //          error if parent doesn't exist
-      //       // Assume relative
-      //       
-      //       if words[i] is a relative pathname:
-      //          error if parent doesn't exist
-
-      // TODO: if path does not start with '/':
-      //       append current working directory
-
+   for (int i=1; i< int(words.size()); ++i) {
       // Second argument should be directory. Split by delimeter '/'
       wordvec path = split(words[i], "/");
 
-      //cout << "fn_mkdir: path: " << path << endl;
-      //cout << "path_exists(state, path): " << path_exists(state, path) << endl;
-
-      // Check if path already exists
+      // Assert path already exists
       if (path_exists(state, path)) {
          // error
          cout << "mkdir: cannot create directory '" << words[i] << "': File exists\n";
          continue;
       }
 
-      // Check if parent path exists
+      // Assert parent path exists
       wordvec parent_path (path.begin(), path.end()-1);
       cout << "parent_path: " << parent_path << endl;
       if (!path_exists(state, parent_path)) {
          cout << "mkdir: cannot create directory '" << words[i] << "': No such file or directory\n";
          continue;
       }
-      // Make new directory in cwd
-      inode_ptr new_node;
-      inode_ptr start = state.get_cwd();                    // save cwd so that it can be returned
-      // loop through all strings in path
-      for (int j=0; j<int(path.size()); ++j) {
-         auto loc = state.get_cwd()->get_contents()->get_dirents().find(path[j]);
-         if (loc == state.get_cwd()->get_contents()->get_dirents().end()) {
-            cout << path[j] << " not found in dirents." << endl; // @DELETE
-            continue;
-         }
-         inode_ptr next_node = loc->second;
-      }
-      new_node = state.get_cwd()->get_contents()->mkdir(path[path.size()-1]); // create the new node
-      state.set_cwd(start); // set the cwd back to beginning
-      DEBUGF ('c', new_node);
+      // Make new directory in parent directory
+      inode_ptr start = state.get_cwd();
+      inode_ptr parent_dir = get_subdir_at(start, parent_path);
+      parent_dir->get_contents()->mkdir(path[path.size()-1]);  // create the new node
 
       cout << "state.get_cwd()->get_contents()->get_dirents(): " << state.get_cwd()->get_contents()->get_dirents() << endl;
    }
-
-   //map<string,inode_ptr> temp_map = new_node->get_contents()->get_dirents();
-   //cout << "temp_map: " << temp_map << endl ;
-   //cout << "temp_map.size(): " << temp_map.size() << endl;
-   //
    return;
 }
 
@@ -492,6 +466,14 @@ void fn_rm (inode_state& state, const wordvec& words){
          continue;
       }
 
+      // Assert that we are not deleting the root directory
+      if (get_subdir_at(state.get_cwd(), dir_name) == state.get_root()) {                // check parent directory
+         if (filename == "." or filename == "..") {
+            cout << "rm: refusing to remove '.' '..' directory: skipping '" << words[i] << "'\n";
+            continue;
+         }
+      }
+
       // Get pointer to parent directory
       inode_ptr parent_dir = get_subdir_at(state.get_cwd(), dir_name);
       
@@ -533,8 +515,66 @@ void fn_rm (inode_state& state, const wordvec& words){
    }
 }
 
-void fn_rmr (inode_state& state, const wordvec& words){
+/** recursive_delete
+ *  @brief: helper fcn for fn_rmr
+ *          recursively deletes a specified inode_ptr
+ *          assumes the pointer exists and is a directory
+ **/
+void recursive_delete(inode_ptr dir) {
+   // Erase "." and ".." from directory first
+   if (dir->get_contents()->get_dirents().empty()) return;  // return if map is empty
+   // Loop through dirents and delete each entry
+   for (auto & entry : dir->get_contents()->get_dirents()) {
+      if (entry.first == "." || entry.first== ".." ) continue; // skip
+      // if entry is a directory, recursively delete it
+      if (entry.second->get_contents()->is_directory()) recursive_delete(entry.second); 
+   }
+   dir->get_contents()->get_dirents().clear();
+   return;
+}
+
+
+void fn_rmr (inode_state& state, const wordvec& words) {
    DEBUGF ('c', state);
    DEBUGF ('c', words);
+   // Assert that a path is provided
+   if (words.size() < 2) {
+      // Print error
+      cout << "rm: missing operand\n";
+      return;
+   }
+   // Loop through arguments
+   for (int i=1; i<int(words.size()); ++i) {
+      // Get pathname
+      wordvec pathname = split(words[i], "/");                       // Get the path to the specified directory
+      wordvec parent_path = pathname;                                
+      parent_path.pop_back();                                        // Get the parent path
+      string filename = pathname.back();                             // Get the name of the file
+
+      cout << "pathname: " << pathname << " parent_path: " << parent_path << " filename: " << filename << endl;
+
+      // Assert that we are not deleting the root directory
+      if (get_subdir_at(state.get_cwd(), parent_path) == state.get_root()) { // check parent directory
+         if (filename == "." or filename == "..") {                  // check subname     
+            cout << "rm: refusing to remove '.' '..' directory: skipping '" << words[i] << "'\n";
+            continue;
+         }
+      }
+
+      // Assert that path exists
+      if (!path_exists(state, pathname)) {
+         cout << "ERROR PATH NO EXIST TODO: FIX ERRORS\n";
+         continue;
+      }   
+      cout << "state: " << state << " pathname: " << pathname << endl;
+      inode_ptr dir = get_subdir_at(state.get_cwd(), pathname);      // Get inode_ptr at path
+      inode_ptr parent_dir = get_subdir_at(state.get_cwd(), parent_path); // Get the parent
+
+      cout << "LINE: " << __LINE__ << " parent_dir: " << parent_dir << endl;
+      recursive_delete(dir);                                         // Recursively delete that path
+      cout << "LINE: " << __LINE__ << endl;
+      parent_dir->get_contents()->get_dirents().erase(filename+'/'); // Erase the entry from its parent
+   }
+   return;
 }
 
