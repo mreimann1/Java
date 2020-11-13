@@ -8,6 +8,6 @@ QuickSort\
 StackPractice
 
 **C++ Projects:**\
-BigInt\
 CountWords\
+BigInt\
 SimulatedTreeShell
