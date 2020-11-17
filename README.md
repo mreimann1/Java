@@ -1,5 +1,5 @@
 # java-cpp
-A repo for various Java and C++ projects that I built in school.
+A mized-purpose repo for various Java and C++ projects that I built in school.
 
 **Java Projects:** \
 BinarySearchTree\
