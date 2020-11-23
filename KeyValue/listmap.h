@@ -47,6 +47,8 @@ class listmap {
       iterator end() { return anchor(); }
       bool empty() const { return anchor_.next == &anchor_; }
       operator bool() const { return not empty(); }
+      void print();
+      void print_by_val(mapped_t val);
 };
 
 
@@ -71,6 +73,7 @@ class listmap<key_t,mapped_t,less_t>::iterator {
       bool operator!= (const iterator& that) const {
          return this->where != that.where;
       }
+      void print() {cout << (*this)->first << " = " << (*this)->second << endl;}
 };
 
 #include "listmap.tcc"
