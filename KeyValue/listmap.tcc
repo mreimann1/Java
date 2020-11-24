@@ -70,7 +70,7 @@ listmap<key_t,mapped_t,less_t>::insert (const value_type& pair) {
       anchor()->next = new_node;
       return iterator(new_node);
    }
-
+   
    // Loop through items and insert lexographically
 
    for (auto it = begin(); it!=end(); ++it) {
@@ -85,7 +85,7 @@ listmap<key_t,mapped_t,less_t>::insert (const value_type& pair) {
          it.where->prev->next = new_node;
          it.where->prev = new_node;
 
-         return it;
+         return iterator(new_node);
       }
       if (is_equal) {
          // Change this nodes mapped value

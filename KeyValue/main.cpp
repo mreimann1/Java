@@ -143,6 +143,7 @@ int main (int argc, char** argv) {
             infile.close();
          }
       }
+      linecount = 0; // Set linecount to zero after each file is done
    }
    return status;
 }
