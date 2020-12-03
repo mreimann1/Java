@@ -1,3 +1,8 @@
 # KeyValue
 
-This project uses C++ template structure to implement a Key-Value hash table build on a Linked List structure.
+Implement a Key-Value hash table build on a Linked List structure.
+
+This project gave me practice with:
+* C++ templates
+* Circularly linked lists
+* Hash tables
