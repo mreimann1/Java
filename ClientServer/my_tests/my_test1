@@ -1,0 +1,10 @@
+a=1
+b=2
+c=3
+=
+b=
+=
+=1
+# I tested adding 3 items then printing then deleting 1 item
+# then printing 1 value
+
